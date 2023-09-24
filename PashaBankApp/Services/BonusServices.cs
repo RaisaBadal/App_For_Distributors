@@ -17,8 +17,10 @@ namespace PashaBankApp.Services
             logger=new LogServices(dbraisa);
         }
         #region InsertBonus(CalcBonus)
+        
         public bool CalcBonus(DateTime startDate, DateTime endDate)
         {
+            //bonus cxrilshi bonusebis damateba, bonusebis gamotvla
             using (var trans = dbraisa.Database.BeginTransaction())
             {
                 try
