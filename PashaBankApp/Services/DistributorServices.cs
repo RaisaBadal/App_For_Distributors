@@ -25,10 +25,12 @@ namespace PashaBankApp.Services
         #region InsertDistributor
         public bool InsertDistributor(InsertDistributorRequest req)
         {
+            //distributor cxrilis shevseba da dakavshirebuli cxrilebis shevseba, kerdzod contaqt, adddress da personaInfo cxrilebis
             using (var trans = dbraisa.Database.BeginTransaction())
             {
                 try
                 {
+                    //validaciebi
                     if (!RegexForValidate.NameIsMatch(req.distributorName) || !RegexForValidate.SurnameIsMatch(req.LastName) ||
                         !RegexForValidate.AddressIsMatch(req.addressInfo))
                         return false;
@@ -197,6 +199,7 @@ namespace PashaBankApp.Services
         #region UpdateDistributor
         public bool UpdateDistributor(UpdateDistributorRequest updis)
         {
+            //distributoris chanawerebis ganaxleba
             try
             {
                 var distup = dbraisa.Distributors.Where(a => a.DistributorID == updis.DistributorID).SingleOrDefault();
@@ -245,6 +248,7 @@ namespace PashaBankApp.Services
         #region DeleteDistributor
         public bool DeleteDistributor(int ditributorID)
         {
+            //gadacemuli ID-is mixedvit distributoris bazidan washla
             try
             {
                 var dist = dbraisa.Distributors.Where(a => a.DistributorID == ditributorID).FirstOrDefault();
@@ -281,6 +285,7 @@ namespace PashaBankApp.Services
         #region SoftDistributorDelete
         public bool SoftDistributorDelete(int distributorID)
         {
+            //gadacemuli distributorID-is mixedvit egretwodebuki soft Delete
             try
             {
                 var dist = dbraisa.Distributors.Where(a => a.DistributorID == distributorID).FirstOrDefault();
@@ -315,6 +320,7 @@ namespace PashaBankApp.Services
 
         public List<GetDistributor> GetDistributor()
         {
+            //distributorebis siis dabruneba
             var AllDist = dbraisa.Distributors.Select(a => new GetDistributor
             {
                 DistributorID = a.DistributorID,

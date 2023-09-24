@@ -18,6 +18,7 @@ namespace PashaBankApp.Services
         #region InsertProduct
         public bool InsertProduct(string productName, decimal price)
         {
+            //produqtebis cxrilis shevseba
             using (var transact=dbRaisa.Database.BeginTransaction())
             {
                 try
@@ -38,6 +39,7 @@ namespace PashaBankApp.Services
                     }
                     else
                     {
+                        //tu arsebosb produqti mashin ar davamatebt
                         Console.WriteLine("Such a product already exists");
                         transact.Rollback();
                         error.Action("Such a product already exists", Enums.ErrorTypeEnum.Info);
@@ -60,8 +62,10 @@ namespace PashaBankApp.Services
         #region UpdateProduct
        public bool UpdateProduct(int productID, string productName, decimal price)
         {
+            //produqtis ganaxleba
             try
             {
+                //vamowmebt tu arsebobs aseti produqti da tu aris igi aqtiuri anu washliliar unda iyos da expireON ar unda iyos shevsebuli
                 var product=dbRaisa.products.Where(a=>a.ProductID==productID).FirstOrDefault();
                 if (product == null || product.ExpireOn!=null)
                 {
@@ -92,6 +96,7 @@ namespace PashaBankApp.Services
 
         public bool DeleteProduct(int productID) 
         {
+            //chanaweris washla mtlianad bazidan
             try
             {
             var prod = dbRaisa.products.Where(a => a.ProductID==productID).FirstOrDefault();
@@ -122,6 +127,7 @@ namespace PashaBankApp.Services
         #region SoftDeletedProduct
        public bool SoftDeletedProduct(int productID)
         {
+            //soft delete funqcia produqtebze
             try
             {
                 var prod = dbRaisa.products.Where(a => a.ProductID == productID).FirstOrDefault();
@@ -154,6 +160,7 @@ namespace PashaBankApp.Services
         #region GetallProduct
         public List<GetProductResponse> getProductResponses()
         {
+            //yvela chanaweris wamogheba product cxrilidan
             var prod = dbRaisa.products.Select(a => new GetProductResponse { ExpireDate = a.ExpireDate, ExpireOn=a.ExpireOn, ProductName=a.ProductName,ProductPrice=a.ProductPrice,ProductID=a.ProductID}).ToList();
             return prod;
         }

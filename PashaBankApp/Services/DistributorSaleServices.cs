@@ -20,10 +20,12 @@ namespace PashaBankApp.Services
         #region InsertDistributoSale
         public bool InsertDistributoSale(InsertDistributorSaleRequest insale)
         {
+            //distributorsale cxrilis shevseba
             using (var tra = dbRaisa.Database.BeginTransaction())
             {
                 try
                 {
+                    //vamowmebt tu arsebobs distributori da produqti gadacemuli ID-is mixedvit
                     var dist = dbRaisa.Distributors.Where(a => a.DistributorID == insale.DistributorID).FirstOrDefault();
                     var price = dbRaisa.products.Where(a => a.ProductID == insale.ProductID).FirstOrDefault().ProductPrice;
                     if (dist == null || price <= 0)
@@ -35,10 +37,12 @@ namespace PashaBankApp.Services
                     }
                     else
                     {
+                        //tu arsebobs mashin vavsebt cxrils 
                         var dissale = new Models.DistributorSale
                         {
                             SaleDate = DateTime.Now,
                             ProductQuantity = insale.ProductQuantity,
+                            //saerto jami=raodenoba *fiqsirebul tanxaze
                             TotalPrice = insale.ProductQuantity * price,
                             distributorID = insale.DistributorID,
                             ProductID = insale.ProductID
@@ -69,6 +73,8 @@ namespace PashaBankApp.Services
         {
             try
             {
+                //distributorsale cxrilidan chanaweris washla
+                //vamowmebt tu arsebobs aseti distributorsale ID
                 var distributorSale=dbRaisa.distributorSales.Where(a=>a.DistributorSaleID== distributorSaleID).FirstOrDefault();
                 if(distributorSale == null)
                 {
@@ -77,7 +83,9 @@ namespace PashaBankApp.Services
                 }
                 else
                 {
+                    //tu moidzebna mashin bazidan wavshlit
                     dbRaisa.distributorSales.Remove(distributorSale);
+                    //log cxrilshi chavwert meramdene ID waishala
                     log.ActionLog($"Deleted successfully, distributor ID: {distributorSaleID}");
                     return true;
                 }
@@ -96,6 +104,7 @@ namespace PashaBankApp.Services
 
         public List<DistributorSale> DistributorSaleGetDist(int distributorID)
         {
+            //gadacemuli ID-s mixedvit distributoris gayidvebis dabruneba
             try
             {
                 var getDist=dbRaisa.distributorSales.Where(a=>a.distributorID== distributorID&& a.ExpireOn==null).ToList();
@@ -127,6 +136,7 @@ namespace PashaBankApp.Services
         {
             try
             {
+                //tu arsebobs gadacemul tarighit shesrulebuli gayidva daabrunebs aset chanawerebs
                 var getdate=dbRaisa.distributorSales.Where(a=>a.SaleDate==saleDate&&a.ExpireOn==null).ToList();
                 if(getdate!=null)
                 {
@@ -153,6 +163,7 @@ namespace PashaBankApp.Services
         {
             try
             {
+                //daabrunebs gadacemuli product ID-is mixedvit chanawerebs
                 var distprod=dbRaisa.distributorSales.Where(a=>a.ProductID==productID&&a.ExpireOn==null).ToList();
                 if(distprod!=null)
                 {
@@ -179,6 +190,12 @@ namespace PashaBankApp.Services
         {
             try
             {
+                //bazidan ar wavshlit, tumca aris egretwodebuli softDelete, gvaqvs ori veli
+                //expireOn da expireDate, romelic tavdapirvelad nulls udris
+                //roca shevavsebt mat shesabamisad washlil chanawerebad vigulisxmebt
+                //tumca bazashi gamogvichndeba es chanawerebi mainc, shevsebuli eqnebat zemot xsenebuli ori veli
+                //shemdgom roca garkveul servisebshi ar mogvindeba mati gamoyeneba shegvidzlia martivad shevamowmot
+                //mag:expireOn!=null -> washlili chanaweria
                 var distSale = dbRaisa.distributorSales.Where(a => a.DistributorSaleID == distributorSaleID).FirstOrDefault();
                 if(distSale==null)
                 {

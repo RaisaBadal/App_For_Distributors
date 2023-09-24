@@ -33,13 +33,14 @@ namespace PashaBankApp.Services
                         if (dbraisa.distributorSales.Where(a => a.distributorID == distID && a.TotalPrice != null).Any())
                         {
                             var totalForDist = dbraisa.distributorSales.Where(a => a.SaleDate > startDate && a.SaleDate < endDate && a.distributorID == distID && a.status == null).Sum(a => a.TotalPrice);
-
+                            //distributoris saerto gayidvebis 10%
                             bonus += (decimal)(totalForDist * 10) / (decimal)100;
 
                             var lsforoff = dbraisa.distributorSales.Where(a => a.distributorID == distID).ToList();
 
                             foreach (var item in lsforoff)
                             {
+                                //statusis monishvna rogorc used, rata ar moxdes gayidvis meored gamoyeneba bonusebis gamotvlashi
                                 item.status = "used";
                             }
                             dbraisa.SaveChanges();
@@ -59,6 +60,7 @@ namespace PashaBankApp.Services
 
                         var bon = new Models.Bonus()
                         {
+                            //bonus cxrilis shevseba
                             DateOfBonus = DateTime.Now,
                             BonusAmount = bonus,
                             DistributorID = distID
@@ -89,6 +91,7 @@ namespace PashaBankApp.Services
         #region GetBonusByNameSurname
         public List<SortBonus> GetBonusByNameSurname(string name,string surname)
         {
+            //bonusebis dasortva gadacemuli saxelis da gvaris mixedvit
             var dist = dbraisa.Distributors.Where(a => a.DistributorName == name && a.DistributorLastName == surname).Select(a => a.DistributorID).FirstOrDefault();
             var distBonus=dbraisa.bonus.Where(a=>a.DistributorID==dist).Select(a => new SortBonus { BonusID = a.BonusID, BonusAmount = a.BonusAmount, DateOfBonus = a.DateOfBonus, DistributorID = a.DistributorID }).ToList();
             return distBonus;
@@ -98,6 +101,7 @@ namespace PashaBankApp.Services
         #region SortByBonusDesc
         public List<SortBonus> SortByBonusDesc()
         {
+            //bonus cxrilis dasortva klebadobit saerto bonustanxit da yvela chanaweris dabruneba
             var distBon=dbraisa.bonus.OrderByDescending(a=>a.BonusAmount).Select(a=>new SortBonus { BonusID=a.BonusID,BonusAmount=a.BonusAmount,DateOfBonus=a.DateOfBonus,DistributorID=a.DistributorID}).ToList();
             return distBon;
         }
@@ -106,6 +110,7 @@ namespace PashaBankApp.Services
         #region SortByBonusAsc
         public List<SortBonus> SortByBonusAsc()
         {
+            //bonus cxrilshi chawerili monacemebis dasortva zrdadobit saerto bonusebis tanxit da dabruneba chanawerebis
             var distBon = dbraisa.bonus.OrderBy(a => a.BonusAmount).Select(a => new SortBonus { BonusID = a.BonusID, BonusAmount = a.BonusAmount, DateOfBonus = a.DateOfBonus, DistributorID = a.DistributorID }).ToList();
             return distBon;
         }

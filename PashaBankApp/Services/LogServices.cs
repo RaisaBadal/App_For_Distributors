@@ -16,6 +16,7 @@ namespace PashaBankApp.Services
         #region ActionLog
         public void ActionLog(string message)
         {
+            //log cxrilshi chanawerebis shevseba
             if (message != null)
             {
                 dbraisa.log.Add(new Models.Log()
@@ -29,9 +30,10 @@ namespace PashaBankApp.Services
 
         #endregion
 
-        #region GetAllErrors
+        #region GetAllLog
         public List<Log> GetAllLog()
         {
+            //yvela chanaweris dabruneba logidan
             return dbraisa.log.ToList();
         }
         #endregion
@@ -39,6 +41,7 @@ namespace PashaBankApp.Services
         #region GetAllLogBetweenDate
         public List<Log> GetAllLogsBetweenDate(DateTime start, DateTime end)
         {
+            //mocemul drois shualedshi momxdari logebis wamogheba
             return dbraisa.log.Where(i => i.LogDate >= start && i.LogDate <= end).ToList();
         }
         #endregion
