@@ -18,7 +18,7 @@ namespace PashaBankApp.Services
         }
         #region InsertBonus(CalcBonus)
         
-        public bool CalcBonus(DateTime startDate, DateTime endDate)
+        public bool CalcBonus(InsertBonus InBon)
         {
             //bonus cxrilshi bonusebis damateba, bonusebis gamotvla
             using (var trans = dbraisa.Database.BeginTransaction())
@@ -32,7 +32,7 @@ namespace PashaBankApp.Services
                         var distID = distributor.DistributorID;
                         if (dbraisa.distributorSales.Where(a => a.distributorID == distID && a.TotalPrice != null).Any())
                         {
-                            var totalForDist = dbraisa.distributorSales.Where(a => a.SaleDate > startDate && a.SaleDate < endDate && a.distributorID == distID && a.status == null).Sum(a => a.TotalPrice);
+                            var totalForDist = dbraisa.distributorSales.Where(a => a.SaleDate > InBon.StartDate && a.SaleDate < InBon.EndDate && a.distributorID == distID && a.status == null).Sum(a => a.TotalPrice);
                             //distributoris saerto gayidvebis 10%
                             bonus += (decimal)(totalForDist * 10) / (decimal)100;
 
@@ -54,7 +54,7 @@ namespace PashaBankApp.Services
                         foreach (var item in listOfInvertedDist)
                         {
                             var distInv = item.DistributorID;
-                            var totalForInventedDist = dbraisa.distributorSales.Where(a => a.SaleDate > startDate && a.SaleDate < endDate && a.distributorID == distInv).Sum(a => a.TotalPrice);
+                            var totalForInventedDist = dbraisa.distributorSales.Where(a => a.SaleDate > InBon.StartDate && a.SaleDate < InBon.EndDate && a.distributorID == distInv).Sum(a => a.TotalPrice);
                             bonus += (decimal)(totalForInventedDist * 5) / (decimal)100;
                         }
 
@@ -89,10 +89,10 @@ namespace PashaBankApp.Services
         #endregion
 
         #region GetBonusByNameSurname
-        public List<SortBonus> GetBonusByNameSurname(string name,string surname)
+        public List<SortBonus> GetBonusByNameSurname(GetBonus getBon)
         {
             //bonusebis dasortva gadacemuli saxelis da gvaris mixedvit
-            var dist = dbraisa.Distributors.Where(a => a.DistributorName == name && a.DistributorLastName == surname).Select(a => a.DistributorID).FirstOrDefault();
+            var dist = dbraisa.Distributors.Where(a => a.DistributorName == getBon.name && a.DistributorLastName == getBon.surname).Select(a => a.DistributorID).FirstOrDefault();
             var distBonus=dbraisa.bonus.Where(a=>a.DistributorID==dist).Select(a => new SortBonus { BonusID = a.BonusID, BonusAmount = a.BonusAmount, DateOfBonus = a.DateOfBonus, DistributorID = a.DistributorID }).ToList();
             return distBonus;
         }

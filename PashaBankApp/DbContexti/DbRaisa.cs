@@ -15,6 +15,9 @@ namespace PashaBankApp.DbContexti
         public DbSet<Error> errors { get; set; }
         public DbSet<Log> log { get; set; }
         public DbSet<Bonus> bonus { get; set; }
+        public DbSet<Manager> manager { get; set; }
+        public DbSet<ManagerAuthentification> managerAuthentification { get; set;}
+        public DbSet<ManagerCookies> managerCookies { get; set; }
 
     }
 }

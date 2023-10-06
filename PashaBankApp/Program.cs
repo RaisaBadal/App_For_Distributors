@@ -5,10 +5,20 @@ using PashaBankApp.Services.Interface;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
 // Add services to the container.
 
 builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddSession(opt =>
+{
+    opt.IdleTimeout = TimeSpan.FromMinutes(20);
+    opt.Cookie.HttpOnly = true;
+    opt.Cookie.IsEssential = true;
+    opt.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+});
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -18,6 +28,7 @@ builder.Services.AddScoped<IDistributorSale,DistributorSaleServices>();
 builder.Services.AddScoped<IError, ErrorServices>();
 builder.Services.AddScoped<ILog,LogServices>();
 builder.Services.AddScoped<Ibonus, BonusServices>();
+builder.Services.AddScoped<IManager, ManagerServices>();
 builder.Services.AddDbContext<DbRaisa>(str =>
 {
     str.UseSqlServer(builder.Configuration.GetConnectionString("RaisasString"));
@@ -35,6 +46,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCookiePolicy();
+app.UseSession();
 
 app.UseAuthorization();
 

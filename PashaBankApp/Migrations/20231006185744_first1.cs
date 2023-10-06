@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace PashaBankApp.Migrations
 {
     /// <inheritdoc />
-    public partial class mgrt : Migration
+    public partial class first1 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -69,6 +69,23 @@ namespace PashaBankApp.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Managers",
+                columns: table => new
+                {
+                    ID = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    PersonalNumber = table.Column<string>(type: "nvarchar(15)", maxLength: 15, nullable: false),
+                    FirstName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    LastName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: false),
+                    Mail = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Managers", x => x.ID);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "PersonalInfos",
                 columns: table => new
                 {
@@ -93,14 +110,55 @@ namespace PashaBankApp.Migrations
                 {
                     ProductID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    ProductName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ProductPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    ProductName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ProductPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     ExpireOn = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ExpireDate = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Products", x => x.ProductID);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ManagerAuthentification",
+                columns: table => new
+                {
+                    ID = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserName = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: false),
+                    Password = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: false),
+                    ManagerID = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ManagerAuthentification", x => x.ID);
+                    table.ForeignKey(
+                        name: "FK_ManagerAuthentification_Managers_ManagerID",
+                        column: x => x.ManagerID,
+                        principalTable: "Managers",
+                        principalColumn: "ID",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ManagerCookies",
+                columns: table => new
+                {
+                    ManagerCookiesID = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Token = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ManagerID = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ManagerCookies", x => x.ManagerCookiesID);
+                    table.ForeignKey(
+                        name: "FK_ManagerCookies_Managers_ManagerID",
+                        column: x => x.ManagerID,
+                        principalTable: "Managers",
+                        principalColumn: "ID",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -116,7 +174,7 @@ namespace PashaBankApp.Migrations
                     ExpireOn = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ExpireDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Recomendedby = table.Column<int>(type: "int", nullable: true),
-                    Level = table.Column<int>(type: "int", nullable: false),
+                    Level = table.Column<int>(type: "int", nullable: true),
                     CountOffInvetedDistributor = table.Column<int>(type: "int", nullable: true),
                     PersonalInfoID = table.Column<int>(type: "int", nullable: false),
                     ContactinfoID = table.Column<int>(type: "int", nullable: false),
@@ -230,6 +288,18 @@ namespace PashaBankApp.Migrations
                 name: "IX_DistributorSales_ProductID",
                 table: "DistributorSales",
                 column: "ProductID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ManagerAuthentification_ManagerID",
+                table: "ManagerAuthentification",
+                column: "ManagerID",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ManagerCookies_ManagerID",
+                table: "ManagerCookies",
+                column: "ManagerID",
+                unique: true);
         }
 
         /// <inheritdoc />
@@ -248,10 +318,19 @@ namespace PashaBankApp.Migrations
                 name: "Logs");
 
             migrationBuilder.DropTable(
+                name: "ManagerAuthentification");
+
+            migrationBuilder.DropTable(
+                name: "ManagerCookies");
+
+            migrationBuilder.DropTable(
                 name: "Distributors");
 
             migrationBuilder.DropTable(
                 name: "Products");
+
+            migrationBuilder.DropTable(
+                name: "Managers");
 
             migrationBuilder.DropTable(
                 name: "Addresses");

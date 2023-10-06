@@ -15,12 +15,12 @@ namespace PashaBankApp.Controllers
             this.prod = prod;
         }
         [HttpPost("InsertProduct")]
-        public IActionResult InsertProduct(string productName, decimal price)
+        public IActionResult InsertProduct(InsertProduct insertpro)
         {
             try
             {
-                if (productName == null||price==0) return BadRequest("argument is null");
-                var res = prod.InsertProduct(productName,price);
+                if (insertpro.ProductName == null|| insertpro.ProductPrice == 0) return BadRequest("argument is null");
+                var res = prod.InsertProduct(insertpro);
                 if (res == false) return StatusCode(501, "Insert failed");
                 return Ok("Success Inserted");
             }
@@ -33,12 +33,12 @@ namespace PashaBankApp.Controllers
 
         }
         [HttpPut("UpdateProduct")]
-        public IActionResult UpdateProduct(int productID, string productName, decimal price)
+        public IActionResult UpdateProduct(UpdateProduct upProduct)
         {
             try
             {
-                if (productID < 1||productName == null||price==0) return BadRequest("argument is null");
-                var res = prod.UpdateProduct(productID, productName, price);
+                if (upProduct.ProductID < 1||upProduct.ProductPrice == null||upProduct.ProductPrice==0) return BadRequest("argument is null");
+                var res = prod.UpdateProduct(upProduct);
                 if (res == false) return StatusCode(501, "Update failed");
                 return Ok("Success Updated");
             }

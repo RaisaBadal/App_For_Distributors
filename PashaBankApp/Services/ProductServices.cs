@@ -16,7 +16,7 @@ namespace PashaBankApp.Services
             log= new LogServices(dbRaisa);
         }
         #region InsertProduct
-        public bool InsertProduct(string productName, decimal price)
+        public bool InsertProduct(InsertProduct InProd)
         {
             //produqtebis cxrilis shevseba
             using (var transact=dbRaisa.Database.BeginTransaction())
@@ -25,15 +25,15 @@ namespace PashaBankApp.Services
                 {
                     var product = new Models.Product
                     {
-                        ProductName = productName,
-                        ProductPrice = price
+                        ProductName = InProd.ProductName,
+                        ProductPrice = InProd.ProductPrice
                     };
-                    var prod = dbRaisa.products.Where(a => a.ProductName == productName).FirstOrDefault();
+                    var prod = dbRaisa.products.Where(a => a.ProductName == InProd.ProductName).FirstOrDefault();
                     if (prod == null)
                     {
                         dbRaisa.products.Add(product);
                         dbRaisa.SaveChanges();
-                        log.ActionLog($"The product has been successfully added to the Product table : {productName}");
+                        log.ActionLog($"The product has been successfully added to the Product table : {InProd.ProductName}");
                         transact.Commit();
                         return true;
                     }
@@ -60,25 +60,25 @@ namespace PashaBankApp.Services
         #endregion
 
         #region UpdateProduct
-       public bool UpdateProduct(int productID, string productName, decimal price)
+       public bool UpdateProduct(UpdateProduct UpProd)
         {
             //produqtis ganaxleba
             try
             {
                 //vamowmebt tu arsebobs aseti produqti da tu aris igi aqtiuri anu washliliar unda iyos da expireON ar unda iyos shevsebuli
-                var product=dbRaisa.products.Where(a=>a.ProductID==productID).FirstOrDefault();
+                var product=dbRaisa.products.Where(a=>a.ProductID==UpProd.ProductID).FirstOrDefault();
                 if (product == null || product.ExpireOn!=null)
                 {
                     Console.WriteLine("No such product exists, try adding :)");
-                    error.Action($"No such product exists, or it is deleted, try adding, ID {productID}", Enums.ErrorTypeEnum.Info);
+                    error.Action($"No such product exists, or it is deleted, try adding, ID {UpProd.ProductID}", Enums.ErrorTypeEnum.Info);
                     return false;
                 }
                 else
                 {
-                   product.ProductName = productName;
-                   product.ProductPrice = price;
+                   product.ProductName = UpProd.ProductName;
+                   product.ProductPrice = UpProd.ProductPrice;
                    dbRaisa.SaveChanges();
-                    log.ActionLog($"The product has been updated successfully, id: {productID}");
+                    log.ActionLog($"The product has been updated successfully, id: {UpProd.ProductID}");
                    return true;
                }
             }

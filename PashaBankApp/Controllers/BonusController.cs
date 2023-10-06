@@ -15,12 +15,12 @@ namespace PashaBankApp.Controllers
             this.bonus = bonus;
         }
         [HttpPost("InsertBonus(CalcBonus)")]
-        public IActionResult CalcBonus(DateTime startDate, DateTime endDate)
+        public IActionResult CalcBonus(InsertBonus insertBonus)
         {
             try
             {
-                if (startDate == null || endDate==null) return BadRequest("Argument is null");
-                var res = bonus.CalcBonus(startDate,endDate);
+                if (insertBonus.StartDate == null || insertBonus.EndDate==null) return BadRequest("Argument is null");
+                var res = bonus.CalcBonus(insertBonus);
                 if (res == false) return StatusCode(501, "Insert failed");
 
                 return Ok("success inserted");
@@ -32,9 +32,9 @@ namespace PashaBankApp.Controllers
         }
 
         [HttpGet("GetBonusByNameSurname")]
-        public List<SortBonus> GetBonusByNameSurname(string name, string surname)
+        public List<SortBonus> GetBonusByNameSurname(GetBonus getbonus)
         {
-            return bonus.GetBonusByNameSurname(name,surname);
+            return bonus.GetBonusByNameSurname(getbonus);
         }
         [HttpGet("SortByBonusDesc")]
         public List<SortBonus> SortByBonusDesc()

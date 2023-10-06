@@ -5,8 +5,8 @@ namespace PashaBankApp.Services.Interface
 {
     public interface Ibonus
     {
-        bool CalcBonus(DateTime startDate, DateTime endDate);
-        List<SortBonus> GetBonusByNameSurname(string name, string surname);
+        bool CalcBonus(InsertBonus InBon);
+        List<SortBonus> GetBonusByNameSurname(GetBonus getBon);
         List<SortBonus> SortByBonusDesc();
         List<SortBonus> SortByBonusAsc();
 

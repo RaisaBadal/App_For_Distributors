@@ -234,6 +234,96 @@ namespace PashaBankApp.Migrations
                     b.ToTable("Logs");
                 });
 
+            modelBuilder.Entity("PashaBankApp.Models.Manager", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Mail")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("PersonalNumber")
+                        .IsRequired()
+                        .HasMaxLength(15)
+                        .HasColumnType("nvarchar(15)");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("Managers");
+                });
+
+            modelBuilder.Entity("PashaBankApp.Models.ManagerAuthentification", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+
+                    b.Property<int>("ManagerID")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("ManagerID")
+                        .IsUnique();
+
+                    b.ToTable("ManagerAuthentification");
+                });
+
+            modelBuilder.Entity("PashaBankApp.Models.ManagerCookies", b =>
+                {
+                    b.Property<int>("ManagerCookiesID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ManagerCookiesID"));
+
+                    b.Property<int>("ManagerID")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("ManagerCookiesID");
+
+                    b.HasIndex("ManagerID")
+                        .IsUnique();
+
+                    b.ToTable("ManagerCookies");
+                });
+
             modelBuilder.Entity("PashaBankApp.Models.PersonalInfo", b =>
                 {
                     b.Property<int>("PersonalInfoID")
@@ -290,9 +380,10 @@ namespace PashaBankApp.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ProductName")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal?>("ProductPrice")
+                    b.Property<decimal>("ProductPrice")
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("ProductID");
@@ -357,6 +448,28 @@ namespace PashaBankApp.Migrations
                     b.Navigation("product");
                 });
 
+            modelBuilder.Entity("PashaBankApp.Models.ManagerAuthentification", b =>
+                {
+                    b.HasOne("PashaBankApp.Models.Manager", "manager")
+                        .WithOne("authManager")
+                        .HasForeignKey("PashaBankApp.Models.ManagerAuthentification", "ManagerID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("manager");
+                });
+
+            modelBuilder.Entity("PashaBankApp.Models.ManagerCookies", b =>
+                {
+                    b.HasOne("PashaBankApp.Models.Manager", "manager")
+                        .WithOne("managercookies")
+                        .HasForeignKey("PashaBankApp.Models.ManagerCookies", "ManagerID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("manager");
+                });
+
             modelBuilder.Entity("PashaBankApp.Models.Address", b =>
                 {
                     b.Navigation("distributor")
@@ -374,6 +487,15 @@ namespace PashaBankApp.Migrations
                     b.Navigation("bonus");
 
                     b.Navigation("distributorSales");
+                });
+
+            modelBuilder.Entity("PashaBankApp.Models.Manager", b =>
+                {
+                    b.Navigation("authManager")
+                        .IsRequired();
+
+                    b.Navigation("managercookies")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("PashaBankApp.Models.PersonalInfo", b =>
