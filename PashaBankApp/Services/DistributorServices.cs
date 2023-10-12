@@ -2,6 +2,7 @@
 using Microsoft.IdentityModel.Tokens;
 using PashaBankApp.DbContexti;
 using PashaBankApp.Enums;
+using PashaBankApp.Models;
 using PashaBankApp.ResponseAndRequest;
 using PashaBankApp.Services.Interface;
 using PashaBankApp.Validation.Regexi;
@@ -21,6 +22,13 @@ namespace PashaBankApp.Services
             error = new ErrorServices(db);
             log= new LogServices(db);
         }
+        private Manager GetManagerbyCookies()
+        {
+
+            return null;
+
+        }
+
 
         #region InsertDistributor
         public bool InsertDistributor(InsertDistributorRequest req)

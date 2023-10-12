@@ -12,8 +12,8 @@ using PashaBankApp.DbContexti;
 namespace PashaBankApp.Migrations
 {
     [DbContext(typeof(DbRaisa))]
-    [Migration("20231006185744_first1")]
-    partial class first1
+    [Migration("20231008142453_rai1")]
+    partial class rai1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

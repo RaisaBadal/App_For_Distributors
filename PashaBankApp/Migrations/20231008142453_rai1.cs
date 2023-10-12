@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace PashaBankApp.Migrations
 {
     /// <inheritdoc />
-    public partial class first1 : Migration
+    public partial class rai1 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

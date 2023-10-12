@@ -20,7 +20,7 @@ namespace PashaBankApp.Controllers
           
                 try
                 {
-                    if (signUp.UserName == null || signUp.Password==null||signUp.PersonalNumber==null) return BadRequest("argument is null");
+                    if (signUp.UserName ==null) return BadRequest("argument is null");
                     var res = manager.RegistrationManager(signUp);
                     if (res == false) return StatusCode(501, "Insert failed");
                     return Ok("Success Inserted");

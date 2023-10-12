@@ -6,5 +6,6 @@ namespace PashaBankApp.Services.Interface
     {
         bool RegistrationManager(InsertManager signup);
         bool SignIn(GetManagerAuthent manAuth);
+        bool SignOut();
     }
 }

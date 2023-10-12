@@ -12,7 +12,7 @@ namespace PashaBankApp.Models
         [MaxLength(30)]
         public string UserName { get; set; }
         [Required]
-        [MaxLength(30)]
+        [MaxLength(200)]
         public string Password { get; set; }
         [ForeignKey("manager")]
         public int ManagerID { get; set; }

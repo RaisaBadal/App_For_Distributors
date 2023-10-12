@@ -3,6 +3,7 @@ using PashaBankApp.Cookies;
 using PashaBankApp.DbContexti;
 using PashaBankApp.ResponseAndRequest;
 using PashaBankApp.Services.Interface;
+using BCrypt.Net;
 
 namespace PashaBankApp.Services
 {
@@ -13,7 +14,7 @@ namespace PashaBankApp.Services
         private readonly LogServices log;
         private readonly CookiesForManager cookiesForManager;
         private readonly IHttpContextAccessor httpContextAccessor;
-        public ManagerServices(DbRaisa dbraisa, IError error, ILog log,IHttpContextAccessor ihhtp)
+        public ManagerServices(DbRaisa dbraisa,IHttpContextAccessor ihhtp)
         {
             this.dbraisa = dbraisa;
             error=new ErrorServices(dbraisa);
@@ -26,7 +27,10 @@ namespace PashaBankApp.Services
         {
             try
             {
+               
                 var managerautID = 0;
+                string salt = BCrypt.Net.BCrypt.GenerateSalt();
+                string hashedPassword = BCrypt.Net.BCrypt.HashPassword(signUp.Password, salt);
                 var sig = new Models.Manager
                 {
                     PersonalNumber = signUp.PersonalNumber,
@@ -36,37 +40,48 @@ namespace PashaBankApp.Services
                     Mail = signUp.Mail
                 };
                 var sign = dbraisa.manager.Where(a => a.PersonalNumber == signUp.PersonalNumber).FirstOrDefault();
-                if (sig != null)
-                {
-                    error.Action("Such manager is already registered", Enums.ErrorTypeEnum.error);
-                    return false;
-                }
-                else
+                if (sign == null)
                 {
                     dbraisa.manager.Add(sig);
+                    Console.WriteLine("test1");
                     dbraisa.SaveChanges();
+                    Console.WriteLine("test2");
                     managerautID = dbraisa.manager.Max(a => a.ID);
                     log.ActionLog($"User is successfully registered,ID {sig.ID}");
-                   // return true;
-                }
-                var managerauth=dbraisa.managerAuthentification.Where(a=>a.UserName==signUp.UserName).FirstOrDefault();
-                if (managerauth != null)
-                {
-                    error.Action("Such manager is already registered", Enums.ErrorTypeEnum.error);
-                    return false;
+                  
                 }
                 else
                 {
-                    string cryptedpass = BCrypt.Net.BCrypt.HashPassword(signUp.Password);
+                    error.Action("Such manager is already registered", Enums.ErrorTypeEnum.error);
+                    return false;
+
+                    // return true;
+                }
+                Console.WriteLine(hashedPassword);
+                var managerauth=dbraisa.managerAuthentification.Where(a=>a.UserName==signUp.UserName).FirstOrDefault();
+                Console.WriteLine("test 3");
+                if (managerauth == null)
+                {
+                    
                     var auth = new Models.ManagerAuthentification
                     {
-                        ID = managerautID,
-                        UserName= signUp.UserName,
-                        Password= cryptedpass
+                        ManagerID = managerautID,
+                        UserName = signUp.UserName,
+                        Password = hashedPassword
+                        //Password= signUp.Password
                     };
+                    Console.WriteLine("test4");
                     dbraisa.managerAuthentification.Add(auth);
-                    dbraisa.SaveChanges();
+                    dbraisa.SaveChanges(true);
+                    Console.WriteLine("test 5");
+                    log.ActionLog($"Info is successfully add in Authentification table, ID {auth.ID}");
                     return true;
+                   
+                }
+                else
+                {
+                    error.Action("Such manager is already registered", Enums.ErrorTypeEnum.error);
+                    return false;
                 }
 
             }
@@ -110,6 +125,23 @@ namespace PashaBankApp.Services
         }
         #endregion
 
+        #region SignOut
+        public bool SignOut()
+        {
+            if (httpContextAccessor != null)
+            {
+                var request = httpContextAccessor.HttpContext.Request;
+                var response = httpContextAccessor.HttpContext.Response;
+                if (request != null && response != null)
+                {
+
+
+                }
+
+            }
+            return true;
+        }
+        #endregion
 
 
     }

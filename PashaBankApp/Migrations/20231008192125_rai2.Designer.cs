@@ -12,8 +12,8 @@ using PashaBankApp.DbContexti;
 namespace PashaBankApp.Migrations
 {
     [DbContext(typeof(DbRaisa))]
-    [Migration("20231006190033_first")]
-    partial class first
+    [Migration("20231008192125_rai2")]
+    partial class rai2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -288,8 +288,8 @@ namespace PashaBankApp.Migrations
 
                     b.Property<string>("Password")
                         .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("UserName")
                         .IsRequired()
