@@ -1,5 +1,6 @@
 ﻿using PashaBankApp.DbContexti;
 using PashaBankApp.Models;
+using PashaBankApp.ResponseAndRequest;
 
 namespace PashaBankApp.Services.Interface
 {
@@ -7,7 +8,7 @@ namespace PashaBankApp.Services.Interface
     {
         List<Log> GetAllLog();
 
-        List<Log> GetAllLogsBetweenDate(DateTime start, DateTime end);
+        List<Log> GetAllLogsBetweenDate(LogBetweenDateRequest logs);
         
     }
 }

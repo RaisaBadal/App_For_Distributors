@@ -1,148 +1,184 @@
 ﻿using Azure.Core;
-using PashaBankApp.Cookies;
 using PashaBankApp.DbContexti;
 using PashaBankApp.ResponseAndRequest;
 using PashaBankApp.Services.Interface;
 using BCrypt.Net;
+using PashaBankApp.Models;
+using Microsoft.AspNetCore.Identity;
+using System.Text.RegularExpressions;
+using PashaBankApp.Validation.Regexi;
+using Microsoft.IdentityModel.Tokens;
+using System.Data;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace PashaBankApp.Services
 {
-    public class ManagerServices:IManager
+    public class ManagerServices : IManager
     {
         public readonly DbRaisa dbraisa;
         private readonly ErrorServices error;
         private readonly LogServices log;
-        private readonly CookiesForManager cookiesForManager;
-        private readonly IHttpContextAccessor httpContextAccessor;
-        public ManagerServices(DbRaisa dbraisa,IHttpContextAccessor ihhtp)
+        private readonly UserManager<Manager> _managUser;
+        private readonly RoleManager<IdentityRole> _rolemanager;
+        private readonly IConfiguration config;
+        public ManagerServices(DbRaisa dbraisa, UserManager<Manager> manager, RoleManager<IdentityRole> rol, IConfiguration config)
         {
             this.dbraisa = dbraisa;
-            error=new ErrorServices(dbraisa);
-            log=new LogServices(dbraisa);
-            httpContextAccessor = ihhtp;
-            cookiesForManager = new CookiesForManager(dbraisa, httpContextAccessor);
+            error = new ErrorServices(dbraisa);
+            log = new LogServices(dbraisa);
+            _managUser = manager;
+            _rolemanager = rol;
+            this.config = config;
         }
         #region RegistrationManager
-        public bool RegistrationManager(InsertManager signUp)
+        public async Task<bool> RegistrationManager(InsertManager signUp)
         {
-            try
+            using (var transaction = dbraisa.Database.BeginTransaction())
             {
-               
-                var managerautID = 0;
-                string salt = BCrypt.Net.BCrypt.GenerateSalt();
-                string hashedPassword = BCrypt.Net.BCrypt.HashPassword(signUp.Password, salt);
-                var sig = new Models.Manager
+                try
                 {
-                    PersonalNumber = signUp.PersonalNumber,
-                    FirstName = signUp.FirstName,
-                    LastName = signUp.LastName,
-                    PhoneNumber = signUp.PhoneNumber,
-                    Mail = signUp.Mail
-                };
-                var sign = dbraisa.manager.Where(a => a.PersonalNumber == signUp.PersonalNumber).FirstOrDefault();
-                if (sign == null)
-                {
-                    dbraisa.manager.Add(sig);
-                    Console.WriteLine("test1");
-                    dbraisa.SaveChanges();
-                    Console.WriteLine("test2");
-                    managerautID = dbraisa.manager.Max(a => a.ID);
-                    log.ActionLog($"User is successfully registered,ID {sig.ID}");
-                  
-                }
-                else
-                {
-                    error.Action("Such manager is already registered", Enums.ErrorTypeEnum.error);
-                    return false;
-
-                    // return true;
-                }
-                Console.WriteLine(hashedPassword);
-                var managerauth=dbraisa.managerAuthentification.Where(a=>a.UserName==signUp.UserName).FirstOrDefault();
-                Console.WriteLine("test 3");
-                if (managerauth == null)
-                {
-                    
-                    var auth = new Models.ManagerAuthentification
+                    if (!RegexForValidate.NameIsMatch(signUp.FirstName) || !RegexForValidate.SurnameIsMatch(signUp.LastName))
                     {
-                        ManagerID = managerautID,
+                        transaction.Rollback();
+                        Console.WriteLine("regex failed");
+                        return false;
+                    }
+                   /* if (!RegexForValidate.EmailIsMatch(signUp.Mail) || !RegexForValidate.PhoneIsMatch(signUp.PhoneNumber))
+                    {
+                        transaction.Rollback();
+                        Console.WriteLine("regex failed");
+                        return false;
+                    }*/
+
+                    Manager manage = new Manager()
+                    {
+                        Email = signUp.Mail,
                         UserName = signUp.UserName,
-                        Password = hashedPassword
-                        //Password= signUp.Password
+                        PhoneNumber = signUp.PhoneNumber,
+                        LastName = signUp.LastName,
+                        FirstName = signUp.FirstName,
+                        PersonalNumber = signUp.PersonalNumber
                     };
-                    Console.WriteLine("test4");
-                    dbraisa.managerAuthentification.Add(auth);
-                    dbraisa.SaveChanges(true);
-                    Console.WriteLine("test 5");
-                    log.ActionLog($"Info is successfully add in Authentification table, ID {auth.ID}");
-                    return true;
-                   
-                }
-                else
-                {
-                    error.Action("Such manager is already registered", Enums.ErrorTypeEnum.error);
+                    var res = await _managUser.CreateAsync(manage, signUp.Password);
+                    if (res.Succeeded)
+                    {
+                        Console.WriteLine("warmatebuliii");
+
+                        string role = signUp.Role.ToUpper();
+                        if (role == "ADMIN" || role == "USER" || role == "MODERATOR" || role == "GUEST" || role == "MANAGER"||role=="OPERATOR")
+                        {
+                            await Console.Out.WriteLineAsync("roli  validuria");
+
+                            var roleExists = await _rolemanager.RoleExistsAsync(signUp.Role.ToUpper());
+
+
+                            if (!roleExists)
+                            {
+                                var roleResult = await _rolemanager.CreateAsync(new IdentityRole(signUp.Role.ToUpper()));
+
+                                if (!roleResult.Succeeded)
+                                {
+                                    transaction.Rollback();
+                                    return false;
+                                }
+                            }
+
+                            var resultofroleasign = await _managUser.AddToRoleAsync(manage, signUp.Role.ToUpper());
+                            await dbraisa.SaveChangesAsync();
+                            if (resultofroleasign.Succeeded)
+                            {
+                                transaction.Commit();
+                                log.ActionLog("Manager  Succesfully installed to the system");
+                                return true;
+                            }
+                            else
+                            {
+                                transaction.Rollback();
+                                return false;
+                            }
+                        }
+                    }transaction.Rollback();
                     return false;
                 }
 
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-                Console.WriteLine(ex.StackTrace);
-                error.Action(ex.Message + " " + ex.StackTrace, Enums.ErrorTypeEnum.Fatal);
-                return false;
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    error.Action(ex.Message + " " + ex.StackTrace, Enums.ErrorTypeEnum.Fatal);
+                    throw;
+                }
             }
         }
         #endregion
 
         #region SignIn
-        public bool SignIn(GetManagerAuthent manAuth)
+
+       
+        public async Task<string> SignIn(GetManagerAuthent manAuth)
         {
             try
             {
-               
-                var auth=dbraisa.managerAuthentification.Where(a=>a.UserName== manAuth.UserName).FirstOrDefault();
-                bool isPasswordValid = BCrypt.Net.BCrypt.Verify(manAuth.Password, auth.Password);
-                if (auth == null || isPasswordValid==false)
+                Console.WriteLine(manAuth.UserName);
+                var res = await _managUser.FindByNameAsync(manAuth.UserName);
+                if (res == null) return null;
+
+                var checkedpass = await _managUser.CheckPasswordAsync(res, manAuth.Password);
+                if (checkedpass)
                 {
-                    Console.WriteLine("aseti manageri ver moidzebna");
-                    return false;
+                    var roli = await _managUser.GetRolesAsync(res);
+                    if (roli.FirstOrDefault() != null)
+                    {
+                        await Console.Out.WriteLineAsync(roli.First());
+                        var re = await GenerateJwtToken(res, roli.First());
+                        if (re == null) return null;
+                        return re;
+                    }
+                    await Console.Out.WriteLineAsync("role is null there");
                 }
-                else
-                {
-                    cookiesForManager.ManageCookieforManager(auth.ManagerID);
-                    Console.WriteLine("tqven warmatebit shexvedit sistemashi");
-                    return true;
-                }
+
+                return null;
 
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
                 Console.WriteLine(ex.StackTrace);
-                return false;
+                return null;
             }
+     
         }
-        #endregion
 
-        #region SignOut
-        public bool SignOut()
+        private async Task<string> GenerateJwtToken(Manager user, string role)
         {
-            if (httpContextAccessor != null)
+            if (user != null)
             {
-                var request = httpContextAccessor.HttpContext.Request;
-                var response = httpContextAccessor.HttpContext.Response;
-                if (request != null && response != null)
+                var claims = new[]
                 {
+              new Claim(ClaimTypes.NameIdentifier, user.Id),
+              new Claim(ClaimTypes.Name,user.UserName),
+              new Claim(ClaimTypes.Role,role),
+              new Claim(ClaimTypes.Email,user.Email),
+              new Claim(ClaimTypes.MobilePhone,user.PhoneNumber)
+            };
 
+                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config.GetSection("Jwt:key").Value));
 
-                }
+                var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
+                var token = new JwtSecurityToken(
+                    issuer: config.GetSection("Jwt:Issuer").Value,
+                    audience: config.GetSection("Jwt:Audience").Value,
+                    claims: claims,
+                    expires: DateTime.Now.AddHours(12),
+                    signingCredentials: credentials
+                );
+                return new JwtSecurityTokenHandler().WriteToken(token);
             }
-            return true;
+            return null;
         }
         #endregion
-
 
     }
 }

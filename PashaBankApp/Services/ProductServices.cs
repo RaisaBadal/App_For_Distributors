@@ -16,7 +16,7 @@ namespace PashaBankApp.Services
             log= new LogServices(dbRaisa);
         }
         #region InsertProduct
-        public bool InsertProduct(InsertProduct InProd)
+        public bool InsertProduct(InsertProducts InProd)
         {
             //produqtebis cxrilis shevseba
             using (var transact=dbRaisa.Database.BeginTransaction())
@@ -94,23 +94,23 @@ namespace PashaBankApp.Services
 
         #region DeleteProduct
 
-        public bool DeleteProduct(int productID) 
+        public bool DeleteProduct(DeleteProducts deleteProd) 
         {
             //chanaweris washla mtlianad bazidan
             try
             {
-            var prod = dbRaisa.products.Where(a => a.ProductID==productID).FirstOrDefault();
+            var prod = dbRaisa.products.Where(a => a.ProductID== deleteProd.ProductID).FirstOrDefault();
                 if (prod == null)
                 {
                     Console.WriteLine("There is no such product, so we cannot delete it :)");
-                    error.Action($"There is no such product, so we cannot delete it, ID {productID}", Enums.ErrorTypeEnum.Info);
+                    error.Action($"There is no such product, so we cannot delete it, ID {deleteProd.ProductID}", Enums.ErrorTypeEnum.Info);
                     return false;
                 }
                 else
                 {
                     dbRaisa.products.Remove(prod);
                     dbRaisa.SaveChanges();
-                    log.ActionLog($"Product deleted successfully, ID: {productID}");
+                    log.ActionLog($"Product deleted successfully, ID: {deleteProd.ProductID}");
                     return true;
                 }
             }
@@ -125,16 +125,16 @@ namespace PashaBankApp.Services
         #endregion
 
         #region SoftDeletedProduct
-       public bool SoftDeletedProduct(int productID)
+       public bool SoftDeletedProduct(SoftDeleteProductRequest SoftDeletedProd)
         {
             //soft delete funqcia produqtebze
             try
             {
-                var prod = dbRaisa.products.Where(a => a.ProductID == productID).FirstOrDefault();
+                var prod = dbRaisa.products.Where(a => a.ProductID == SoftDeletedProd.ProductID).FirstOrDefault();
                 if(prod == null)
                 {
-                    Console.WriteLine($"No such record was found, ID {productID}");
-                    error.Action($"No such record was found, ID {productID}", Enums.ErrorTypeEnum.error);
+                    Console.WriteLine($"No such record was found, ID {SoftDeletedProd.ProductID}");
+                    error.Action($"No such record was found, ID {SoftDeletedProd.ProductID}", Enums.ErrorTypeEnum.error);
                     return false;
                 }
                 else
@@ -142,7 +142,7 @@ namespace PashaBankApp.Services
                     prod.ExpireOn = "Expired";
                     prod.ExpireDate= DateTime.Now;
                     dbRaisa.SaveChanges();
-                    log.ActionLog($"Product: {productID}  is soft deleted");
+                    log.ActionLog($"Product: {SoftDeletedProd.ProductID}  is soft deleted");
                     return true;
                 }
                 

@@ -1,6 +1,7 @@
 ﻿using PashaBankApp.DbContexti;
 using PashaBankApp.Enums;
 using PashaBankApp.Models;
+using PashaBankApp.ResponseAndRequest;
 using PashaBankApp.Services.Interface;
 
 namespace PashaBankApp.Services
@@ -39,10 +40,10 @@ namespace PashaBankApp.Services
         #endregion
 
         #region GetAllLogBetweenDate
-        public List<Log> GetAllLogsBetweenDate(DateTime start, DateTime end)
+        public List<Log> GetAllLogsBetweenDate(LogBetweenDateRequest logs)
         {
             //mocemul drois shualedshi momxdari logebis wamogheba
-            return dbraisa.log.Where(i => i.LogDate >= start && i.LogDate <= end).ToList();
+            return dbraisa.log.Where(i => i.LogDate >= logs.start && i.LogDate <= logs.end).ToList();
         }
         #endregion
 

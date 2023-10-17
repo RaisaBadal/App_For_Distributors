@@ -108,10 +108,10 @@ namespace PashaBankApp.Services
         #endregion
 
         #region SortByBonusAsc
-        public List<SortBonus> SortByBonusAsc()
+        public List<SortBonusAsc> SortByBonusAsc()
         {
             //bonus cxrilshi chawerili monacemebis dasortva zrdadobit saerto bonusebis tanxit da dabruneba chanawerebis
-            var distBon = dbraisa.bonus.OrderBy(a => a.BonusAmount).Select(a => new SortBonus { BonusID = a.BonusID, BonusAmount = a.BonusAmount, DateOfBonus = a.DateOfBonus, DistributorID = a.DistributorID }).ToList();
+            var distBon = dbraisa.bonus.OrderBy(a => a.BonusAmount).Select(a => new SortBonusAsc { BonusID = a.BonusID, BonusAmount = a.BonusAmount, DateOfBonus = a.DateOfBonus, DistributorID = a.DistributorID }).ToList();
             return distBon;
         }
         #endregion

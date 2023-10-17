@@ -1,6 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
+using PashaBankApp.Controllers.Interface;
 using PashaBankApp.DbContexti;
 using PashaBankApp.Enums;
 using PashaBankApp.ResponseAndRequest;
@@ -8,25 +11,43 @@ using PashaBankApp.Services.Interface;
 
 namespace PashaBankApp.Controllers
 {
+
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "ManagerOnly")]
     public class DistributorController : ControllerBase
     {
-        public readonly IDistributor idistr;
-        public DistributorController(IDistributor idistr)
+
+        private readonly ICommandHandler<InsertDistributorRequest> insertdistributorCmdHandler;
+        private readonly ICommandHandler<UpdateDistributorRequest> updatedistributorCmdHandler;
+        private readonly ICommandHandler<DeleteDistributor> deletedistributorCmdHandler;
+        private readonly ICommandHandler<SoftDeleteDistributor> softDeletedistributorCmdHandler;
+        private readonly IcommandHandlerList<GetDistributor> getDistributorCmdHandler;
+        public DistributorController(
+            ICommandHandler<InsertDistributorRequest> insertdistributorCmdHandler,
+            ICommandHandler<UpdateDistributorRequest> updatedistributorCmdHandler,
+            ICommandHandler<DeleteDistributor> deletedistributorCmdHandler,
+            ICommandHandler<SoftDeleteDistributor> softDeletedistributorCmdHandler,
+            IcommandHandlerList<GetDistributor> getDistributorCmdHandler
+            )
         {
-            this.idistr = idistr;
+            this.insertdistributorCmdHandler = insertdistributorCmdHandler;
+            this.updatedistributorCmdHandler = updatedistributorCmdHandler;
+            this.deletedistributorCmdHandler = deletedistributorCmdHandler;
+            this.softDeletedistributorCmdHandler = softDeletedistributorCmdHandler;
+            this.getDistributorCmdHandler = getDistributorCmdHandler;
         }
-        [HttpPost("InsertDistributor")]
-        public IActionResult InsertDistributori([FromBody] InsertDistributorRequest req)
+        [HttpPost("Insert")]
+        public async Task <IActionResult> InsertDistributori([FromBody] InsertDistributorRequest req)
         {
             try
             {
-                if (req == null) return BadRequest("argument is null");//NotFound("argument is null");
-                var res = idistr.InsertDistributor(req);
-                if (res == false) return StatusCode(501, "Insert failed");
-
-                return Ok("success inserted");
+                if (req == null) return BadRequest("argument is null");
+                if (insertdistributorCmdHandler.Handle(req) == true)
+                {
+                    return Ok("success inserted");
+                }
+                return NotFound("Failed!");
 
             }
             catch (Exception exp)
@@ -34,66 +55,82 @@ namespace PashaBankApp.Controllers
                 return StatusCode(103, exp.Message);
             }
         }
-        [HttpPut("UpdateDistributor")]
-        public IActionResult UpdateDistributor([FromBody] UpdateDistributorRequest updis)
+        [HttpPut("Update")]
+        public async Task <IActionResult> UpdateDistributor([FromBody] UpdateDistributorRequest updis)
         {
             try
             {
                 if (updis == null) return BadRequest("argument is null");
-                var res = idistr.UpdateDistributor(updis);
-                if (res == false) return StatusCode(501, "Update failed");
-                return Ok("Success Updated");
+                if (updatedistributorCmdHandler.Handle(updis) == true)
+                {
+                    return Ok("success Updated");
+                }
+                return NotFound("Failed!");
+
             }
-            catch (Exception ex)
+            catch (Exception exp)
             {
-                return StatusCode(103, ex.Message);
+                return StatusCode(103, exp.Message);
             }
 
         }
-        [HttpDelete("DeleteDistributor")]
-        public IActionResult DeleteDistributor(int ditributorID)
+        [HttpDelete("Delete")]
+        public async Task <IActionResult> DeleteDistributor(DeleteDistributor deletedistr)
         {
             try
             {
-                if (ditributorID < 1)
+                if (deletedistr == null) return BadRequest("argument is null");
+                if (deletedistributorCmdHandler.Handle(deletedistr) == true)
                 {
-                    return BadRequest("Argument is null");
+                    return Ok("success Deleted");
                 }
-                var res = idistr.DeleteDistributor(ditributorID);
-                if (res == false) return StatusCode(501, "Delete failed");
-                return Ok("Success Deleted");
+                return NotFound("Failed!");
+
             }
-            catch (Exception ex)
+            catch (Exception exp)
             {
-                return StatusCode(103, ex.Message);
+                return StatusCode(103, exp.Message);
             }
 
         }
 
-        [HttpPatch("DistributorSoftDeleted")]
-         public IActionResult SoftDistributorDelete(int ditributorID)
+        [HttpPatch("SoftDeleted")]
+         public async Task <IActionResult> SoftDistributorDelete(SoftDeleteDistributor softdeletedist)
         {
-           
+
             try
             {
-                if (ditributorID < 1)
+                if (softdeletedist == null) return BadRequest("argument is null");
+                if (softDeletedistributorCmdHandler.Handle(softdeletedist) == true)
                 {
-                    return BadRequest("Argument is null");
+                    return Ok("success SoftDeleted");
                 }
-                var res = idistr.SoftDistributorDelete(ditributorID);
-                if (res == false) return StatusCode(501, "Delete failed");
-                return Ok("Success Soft Deleted");
+                return NotFound("Failed!");
+
             }
-            catch (Exception ex)
+            catch (Exception exp)
             {
-                return StatusCode(103, ex.Message);
+                return StatusCode(103, exp.Message);
             }
 
         }
-        [HttpGet("GetDistributor")]
-        public List<GetDistributor> GetDistributor()
+        [HttpGet("GetAll")]
+        public async Task<IActionResult> GetDistributor()
         {
-            return idistr.GetDistributor();
+            try
+            {
+                var res = getDistributorCmdHandler.Handle();
+                if (res == null)
+                {
+                    return NoContent();
+                }
+                return Ok(res);
+
+            }
+            catch (Exception exp)
+            {
+                return StatusCode(103, exp.Message);
+            }
         }
     }
 }

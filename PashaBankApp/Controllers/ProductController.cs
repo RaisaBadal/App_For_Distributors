@@ -1,28 +1,58 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using PashaBankApp.Controllers.CommandHandler.ProductHandler;
+using PashaBankApp.Controllers.Interface;
 using PashaBankApp.ResponseAndRequest;
 using PashaBankApp.Services.Interface;
 
 namespace PashaBankApp.Controllers
 {
+   
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "ManagerOnly")]
     public class ProductController : ControllerBase
     {
-        private readonly IProduct prod;
-        public ProductController(IProduct prod)
+        //private readonly IProduct prod;
+        private readonly ICommandHandler<InsertProducts> insertProductHandler;
+        private readonly ICommandHandler<UpdateProduct> updateProductHandler;
+        private readonly ICommandHandler<DeleteProducts> deleteProductHandler;
+        private readonly ICommandHandler<SoftDeleteProductRequest> softDeleteProductHandler;
+        private readonly IcommandHandlerList<GetProductResponse> getProductHandler;
+
+        public ProductController(//IProduct prod,
+         ICommandHandler<InsertProducts> insertProductHandler,
+         ICommandHandler<UpdateProduct> updateProductHandler,
+         ICommandHandler<DeleteProducts> deleteProductHandler,
+         ICommandHandler<SoftDeleteProductRequest> softDeleteProductHandler,
+         IcommandHandlerList<GetProductResponse> getProductHandler)
         {
-            this.prod = prod;
+           // this.prod = prod;
+            this.insertProductHandler = insertProductHandler;
+            this.updateProductHandler = updateProductHandler;
+            this.deleteProductHandler = deleteProductHandler;
+            this.softDeleteProductHandler= softDeleteProductHandler;
+            this.getProductHandler = getProductHandler;
+
         }
-        [HttpPost("InsertProduct")]
-        public IActionResult InsertProduct(InsertProduct insertpro)
+        [HttpPost("Insert")]
+        public async Task<IActionResult> InsertProduct(InsertProducts insertpro)
         {
+          
             try
             {
-                if (insertpro.ProductName == null|| insertpro.ProductPrice == 0) return BadRequest("argument is null");
-                var res = prod.InsertProduct(insertpro);
-                if (res == false) return StatusCode(501, "Insert failed");
-                return Ok("Success Inserted");
+                if (insertpro == null)
+                {
+                    return BadRequest("Argument is null");
+                }
+                if(insertProductHandler.Handle(insertpro))
+                {
+                    return Ok("succesfully Inserted!!!");
+                }
+
+                 return NotFound("failed to insert");
             }
             catch (Exception ex)
             {
@@ -32,15 +62,21 @@ namespace PashaBankApp.Controllers
 
 
         }
-        [HttpPut("UpdateProduct")]
-        public IActionResult UpdateProduct(UpdateProduct upProduct)
+        [HttpPut("Update")]
+        public async Task <IActionResult> UpdateProduct(UpdateProduct upProduct)
         {
+           
             try
             {
-                if (upProduct.ProductID < 1||upProduct.ProductPrice == null||upProduct.ProductPrice==0) return BadRequest("argument is null");
-                var res = prod.UpdateProduct(upProduct);
-                if (res == false) return StatusCode(501, "Update failed");
-                return Ok("Success Updated");
+                if (upProduct == null)
+                {
+                  return  BadRequest("Argument is null");
+                }
+                if (updateProductHandler.Handle(upProduct)==true)
+                {
+                    return Ok("succesfully Inserted!!!");
+                }
+               return  NotFound("Failed");
             }
             catch (Exception ex)
             {
@@ -48,15 +84,21 @@ namespace PashaBankApp.Controllers
                 return StatusCode(103, ex.Message);
             }
         }
-        [HttpDelete("DeleteProduct")]
-        public IActionResult DeleteProduct(int productID)
+        [HttpDelete("Delete")]
+        public async Task<IActionResult> DeleteProduct(DeleteProducts deleteprod)
         {
+           
             try
             {
-                if (productID <1) return BadRequest("argument is null");
-                var res = prod.DeleteProduct(productID);
-                if (res == false) return StatusCode(501, "Delete failed");
-                return Ok("Success Deleted");
+                if (deleteprod == null)
+                {
+                    return BadRequest("Argument is null");
+                }
+               if(deleteProductHandler.Handle(deleteprod) == true)
+                {
+                    return Ok("Success Inserted");
+                }
+                return NotFound("Failed");
             }
             catch (Exception ex)
             {
@@ -65,15 +107,21 @@ namespace PashaBankApp.Controllers
             }
         }
 
-        [HttpPatch("SoftDeletedProduct")]
-        public IActionResult SoftDeletedProduct(int productID)
+        [HttpPatch("SoftDelete")]
+        public async Task <IActionResult> SoftDeletedProduct(SoftDeleteProductRequest deleteprod)
         {
+           
             try
             {
-                if (productID < 1) return BadRequest("argument is null");
-                var res = prod.SoftDeletedProduct(productID);
-                if (res == false) return StatusCode(501, "Delete failed");
-                return Ok("Success Deleted");
+                if (deleteprod == null)
+                {
+                    return BadRequest("Argument is null");
+                }
+                if(softDeleteProductHandler.Handle(deleteprod)==true)
+                {
+                    return Ok("Success Inserted");
+                }
+                return NotFound("Failed!");
             }
             catch (Exception ex)
             {
@@ -81,10 +129,23 @@ namespace PashaBankApp.Controllers
                 return StatusCode(103, ex.Message);
             }
         }
-        [HttpGet("GettAllProduct")]
-        public List<GetProductResponse> getProductResponses()
+        [HttpGet("GettAll")]
+        public async Task<IActionResult> getProductResponses()
+
         {
-            return prod.getProductResponses();
+            try
+            {
+                var res = getProductHandler.Handle();
+                if (res == null) return NotFound("product not exist");
+
+                return Ok(res);
+
+            }
+            catch (Exception ex)
+            {
+
+                return StatusCode(103, ex.Message + "," + ex.StackTrace);
+            }
         }
     }
 }

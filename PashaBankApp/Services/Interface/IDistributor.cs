@@ -7,8 +7,8 @@ namespace PashaBankApp.Services.Interface
     {
         bool InsertDistributor(InsertDistributorRequest req);
         bool UpdateDistributor(UpdateDistributorRequest updis);
-        bool DeleteDistributor(int ditributorID);
-        bool SoftDistributorDelete(int distributorID);
+        bool DeleteDistributor(DeleteDistributor deleteDistr);
+        bool SoftDistributorDelete(SoftDeleteDistributor deleteDistr);
         List<GetDistributor> GetDistributor();
     }
 }

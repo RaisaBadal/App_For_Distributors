@@ -8,7 +8,7 @@ namespace PashaBankApp.Services.Interface
         bool CalcBonus(InsertBonus InBon);
         List<SortBonus> GetBonusByNameSurname(GetBonus getBon);
         List<SortBonus> SortByBonusDesc();
-        List<SortBonus> SortByBonusAsc();
+        List<SortBonusAsc> SortByBonusAsc();
 
     }
 }

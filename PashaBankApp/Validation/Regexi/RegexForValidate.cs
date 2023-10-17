@@ -32,6 +32,7 @@ namespace PashaBankApp.Validation.Regexi
             return rgx.IsMatch(Email);
         }
 
+
         #endregion
     }
 }

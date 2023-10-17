@@ -5,12 +5,12 @@ namespace PashaBankApp.Services.Interface
 {
     public interface IDistributorSale
     {
-        bool InsertDistributoSale(InsertDistributorSaleRequest insale);
-        bool DeleteDistributorSale(int distributorSaleID);
-        bool SoftDeletedDistributorSale(int distributorSaleID);
-        List<DistributorSale> DistributorSaleGetDist(int distributorID);
-        List<DistributorSale> DistributorSaleGetDate(DateTime saleDate);
-        List<DistributorSale> DistributorSaleGetProduct(int productID);
+        bool InsertDistributoSaleAsync(InsertDistributorSaleRequest insale);
+        bool DeleteDistributorSale(DeleteDistributorSale deleteDistrSale);
+        bool SoftDeletedDistributorSale(SoftDeleteDistributorSaleRequest deleteDistrSale);
+        List<DistributorSale> DistributorSaleGetDist(GetDistributorSaleRequest distsale);
+        List<DistributorSale> DistributorSaleGetDate(DistributorSaleGetDateRequest dist);
+        List<DistributorSale> DistributorSaleGetProduct(DistributorSaleGetProductRequest prod);
 
     }
 }

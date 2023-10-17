@@ -1,6 +1,7 @@
 ﻿using PashaBankApp.DbContexti;
 using PashaBankApp.Enums;
 using PashaBankApp.Models;
+using PashaBankApp.ResponseAndRequest;
 
 namespace PashaBankApp.Services.Interface
 {
@@ -8,6 +9,6 @@ namespace PashaBankApp.Services.Interface
     {
         List<Error> GetAllErrors();
 
-        List<Error> GetAllErrorsBetweenDate(DateTime start, DateTime end);
+        List<Error> GetAllErrorsBetweenDate(ErrorBetweenDateRequest dateresp);
     }
 }

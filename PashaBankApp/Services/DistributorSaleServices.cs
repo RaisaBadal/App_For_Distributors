@@ -5,7 +5,7 @@ using PashaBankApp.Services.Interface;
 
 namespace PashaBankApp.Services
 {
-    public class DistributorSaleServices : IDistributorSale
+    public class DistributorSaleServices :IDistributorSale
     {
         public readonly DbRaisa dbRaisa;
         private readonly ErrorServices error;
@@ -18,7 +18,7 @@ namespace PashaBankApp.Services
         }
 
         #region InsertDistributoSale
-        public bool InsertDistributoSale(InsertDistributorSaleRequest insale)
+        public bool InsertDistributoSaleAsync(InsertDistributorSaleRequest insale)
         {
             //distributorsale cxrilis shevseba
             using (var tra = dbRaisa.Database.BeginTransaction())
@@ -26,12 +26,12 @@ namespace PashaBankApp.Services
                 try
                 {
                     //vamowmebt tu arsebobs distributori da produqti gadacemuli ID-is mixedvit
-                    var dist = dbRaisa.Distributors.Where(a => a.DistributorID == insale.DistributorID).FirstOrDefault();
+                    var dist =   dbRaisa.Distributors.Where(a => a.DistributorID == insale.DistributorID).FirstOrDefault();
                     var price = dbRaisa.products.Where(a => a.ProductID == insale.ProductID).FirstOrDefault().ProductPrice;
                     if (dist == null || price <= 0)
                     {
                         Console.WriteLine("The product or distributor could not be found in the system :))");
-                        tra.Rollback();
+                          tra.Rollback();
                         error.Action("The product or distributor could not be found in the system", Enums.ErrorTypeEnum.Info);
                         return false;
                     }
@@ -69,13 +69,13 @@ namespace PashaBankApp.Services
         #endregion
 
         #region DeleteDistributorSale
-        public bool DeleteDistributorSale(int distributorSaleID)
+        public bool DeleteDistributorSale(DeleteDistributorSale deleteDistrSale)
         {
             try
             {
                 //distributorsale cxrilidan chanaweris washla
                 //vamowmebt tu arsebobs aseti distributorsale ID
-                var distributorSale=dbRaisa.distributorSales.Where(a=>a.DistributorSaleID== distributorSaleID).FirstOrDefault();
+                var distributorSale=dbRaisa.distributorSales.Where(a=>a.DistributorSaleID== deleteDistrSale.DistributorID).FirstOrDefault();
                 if(distributorSale == null)
                 {
                     error.Action("Such a record was not found in the database, so we cannot delete it", Enums.ErrorTypeEnum.Info);
@@ -86,7 +86,7 @@ namespace PashaBankApp.Services
                     //tu moidzebna mashin bazidan wavshlit
                     dbRaisa.distributorSales.Remove(distributorSale);
                     //log cxrilshi chavwert meramdene ID waishala
-                    log.ActionLog($"Deleted successfully, distributor ID: {distributorSaleID}");
+                    log.ActionLog($"Deleted successfully, distributor ID: {deleteDistrSale.DistributorID}");
                     return true;
                 }
             }
@@ -102,12 +102,12 @@ namespace PashaBankApp.Services
 
         #region DistributorSaleGetDist
 
-        public List<DistributorSale> DistributorSaleGetDist(int distributorID)
+        public List<DistributorSale> DistributorSaleGetDist(GetDistributorSaleRequest distributorsale)
         {
             //gadacemuli ID-s mixedvit distributoris gayidvebis dabruneba
             try
             {
-                var getDist=dbRaisa.distributorSales.Where(a=>a.distributorID== distributorID&& a.ExpireOn==null).ToList();
+                var getDist=dbRaisa.distributorSales.Where(a=>a.distributorID== distributorsale.DistributorID && a.ExpireOn==null).ToList();
                 if (getDist!=null  && getDist.Count > 0)
                 {
 
@@ -132,15 +132,15 @@ namespace PashaBankApp.Services
         #endregion
 
         #region DistributorSaleGetDate
-        public List<DistributorSale> DistributorSaleGetDate(DateTime saleDate)
+        public List<DistributorSale> DistributorSaleGetDate(DistributorSaleGetDateRequest distsale)
         {
             try
             {
                 //tu arsebobs gadacemul tarighit shesrulebuli gayidva daabrunebs aset chanawerebs
-                var getdate=dbRaisa.distributorSales.Where(a=>a.SaleDate==saleDate&&a.ExpireOn==null).ToList();
+                var getdate=  dbRaisa.distributorSales.Where(a=>a.SaleDate==distsale.saleDate&&a.ExpireOn==null).ToList();
                 if(getdate!=null)
                 {
-                    return getdate;
+                    return  getdate;
                 }
                 else
                 {
@@ -159,12 +159,12 @@ namespace PashaBankApp.Services
         #endregion
 
         #region DistributorSaleGetProduct
-       public List<DistributorSale> DistributorSaleGetProduct(int productID)
+       public List<DistributorSale> DistributorSaleGetProduct(DistributorSaleGetProductRequest distprodSale)
         {
             try
             {
                 //daabrunebs gadacemuli product ID-is mixedvit chanawerebs
-                var distprod=dbRaisa.distributorSales.Where(a=>a.ProductID==productID&&a.ExpireOn==null).ToList();
+                var distprod=dbRaisa.distributorSales.Where(a=>a.ProductID== distprodSale.productID&& a.ExpireOn==null).ToList();
                 if(distprod!=null)
                 {
                     return distprod;
@@ -186,7 +186,7 @@ namespace PashaBankApp.Services
         #endregion
 
         #region SoftDeletedDistributorSale
-        public bool SoftDeletedDistributorSale(int distributorSaleID)
+        public bool SoftDeletedDistributorSale(SoftDeleteDistributorSaleRequest deleteDistrSale)
         {
             try
             {
@@ -196,7 +196,7 @@ namespace PashaBankApp.Services
                 //tumca bazashi gamogvichndeba es chanawerebi mainc, shevsebuli eqnebat zemot xsenebuli ori veli
                 //shemdgom roca garkveul servisebshi ar mogvindeba mati gamoyeneba shegvidzlia martivad shevamowmot
                 //mag:expireOn!=null -> washlili chanaweria
-                var distSale = dbRaisa.distributorSales.Where(a => a.DistributorSaleID == distributorSaleID).FirstOrDefault();
+                var distSale = dbRaisa.distributorSales.Where(a => a.DistributorSaleID == deleteDistrSale.DistributorSaleID).FirstOrDefault();
                 if(distSale==null)
                 {
                     Console.WriteLine("No such record was found");
@@ -207,7 +207,7 @@ namespace PashaBankApp.Services
                 {
                     distSale.ExpireOn = "Expired";
                     distSale.ExpireDate= DateTime.Now;
-                    log.ActionLog($"Distributor Sale: {distributorSaleID} is softed deleted");
+                    log.ActionLog($"Distributor Sale: {deleteDistrSale.DistributorSaleID} is softed deleted");
                     return true;
                 }
             }

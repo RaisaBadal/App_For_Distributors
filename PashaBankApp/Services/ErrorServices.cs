@@ -2,6 +2,7 @@
 using PashaBankApp.DbContexti;
 using PashaBankApp.Enums;
 using PashaBankApp.Models;
+using PashaBankApp.ResponseAndRequest;
 using PashaBankApp.Services.Interface;
 
 namespace PashaBankApp.Services
@@ -40,10 +41,10 @@ namespace PashaBankApp.Services
         #endregion
 
         #region GetAllErrorsBetweenDate
-        public List<Error> GetAllErrorsBetweenDate(DateTime start, DateTime end)
+        public List<Error> GetAllErrorsBetweenDate(ErrorBetweenDateRequest dateresp)
         {
             //mocemul drois shualedshi momxdari errorebis wamogheba
-            return dbraisa.errors.Where(i => i.TimeofOccured >= start && i.TimeofOccured <= end).ToList();
+            return dbraisa.errors.Where(i => i.TimeofOccured >= dateresp.start && i.TimeofOccured <= dateresp.end).ToList();
         }
 
         #endregion

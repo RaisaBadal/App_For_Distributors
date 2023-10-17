@@ -1,30 +1,63 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using PashaBankApp.Controllers.Interface;
 using PashaBankApp.Models;
+using PashaBankApp.ResponseAndRequest;
 using PashaBankApp.Services.Interface;
 
 
 namespace PashaBankApp.Controllers
 {
+
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "ManagerOnly")]
     public class ErrorController : ControllerBase
     {
-        private readonly IError dberror;
-        public ErrorController(IError dberror)
+        private readonly IcommandHandlerList<Error> allErrorHandler;
+        private readonly IcommandHandlerListAndResponse<ErrorBetweenDateRequest, Error> ErrorBetweenDateHandler;
+
+        public ErrorController(IcommandHandlerList<Error> allErrorHandler, IcommandHandlerListAndResponse<ErrorBetweenDateRequest, Error> ErrorBetweenDateHandler)
         {
-            this.dberror = dberror;
+           this.allErrorHandler= allErrorHandler;
+            this.ErrorBetweenDateHandler= ErrorBetweenDateHandler;
         }
-        [HttpGet("GetAllErrors")]
-        public List<Error> GetAllErrors()
+        [HttpGet("GetAll")]
+        public async Task<IActionResult> GetAllErrors()
         {
-            return dberror.GetAllErrors();
+            try
+            {
+                var res = allErrorHandler.Handle();
+                if (res == null)
+                {
+                    return NotFound("Errors not exist!");
+                }
+                return Ok(res);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(103, ex.Message);
+            }
         }
-        [HttpGet("GetAllErrorsBetweenDate")]
-        public List<Error> GetAllErrorsBetweenDate(DateTime start, DateTime end)
+        [HttpPost("BetweenDate")]
+        public async Task<IActionResult> GetAllErrorsBetweenDate(ErrorBetweenDateRequest errorrequest)
         {
-            return dberror.GetAllErrorsBetweenDate(start, end);
+            try
+            {
+                var res = ErrorBetweenDateHandler.Handle(errorrequest);
+                if (res == null)
+                {
+                    return NotFound("Errors not exist!");
+                }
+                return Ok(res);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(103, ex.Message);
+            }
         }
     }
 }

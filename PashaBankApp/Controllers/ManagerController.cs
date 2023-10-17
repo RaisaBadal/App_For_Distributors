@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PashaBankApp.ResponseAndRequest;
 using PashaBankApp.Services.Interface;
@@ -15,13 +17,13 @@ namespace PashaBankApp.Controllers
             this.manager = manager;
         }
         [HttpPost("Registration")]
-        public IActionResult RegistrationManager(InsertManager signUp)
+        public async Task<IActionResult> RegistrationManager(InsertManager signUp)
         {
           
                 try
                 {
                     if (signUp.UserName ==null) return BadRequest("argument is null");
-                    var res = manager.RegistrationManager(signUp);
+                    var res = await manager.RegistrationManager(signUp);
                     if (res == false) return StatusCode(501, "Insert failed");
                     return Ok("Success Inserted");
                 }
@@ -31,29 +33,16 @@ namespace PashaBankApp.Controllers
                     return StatusCode(103, ex.Message);
                 }
         }
-        [HttpPatch("signin")]
-        public IActionResult SignIn(GetManagerAuthent manAuth)
+       
+        [HttpPost("SignIn")]
+        public async Task<IActionResult> SignIn(GetManagerAuthent sign)
         {
-            try
-            {
-                if (manager == null)
-                {
-                    return BadRequest("Argument is null");
-                }
-                var res = manager.SignIn(manAuth);
-                if (res == false)
-                {
-                    return StatusCode(501, "failed");
-                }
-                else
-                {
-                    return Ok("Success");
-                }
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(103, ex.Message);
-            }
+            var res = await manager.SignIn(sign); 
+
+            if (res != null) return Ok(res);
+
+            return BadRequest(" warumatebeli");
         }
+
     }
 }

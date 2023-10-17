@@ -1,9 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using PashaBankApp.Models;
 
 namespace PashaBankApp.DbContexti
 {
-    public class DbRaisa:DbContext
+    public class DbRaisa:IdentityDbContext<Manager,IdentityRole,string>
     {
         public DbRaisa(DbContextOptions<DbRaisa> ops) : base(ops) { }
         public DbSet<Distributor> Distributors { get; set; }
@@ -16,8 +18,8 @@ namespace PashaBankApp.DbContexti
         public DbSet<Log> log { get; set; }
         public DbSet<Bonus> bonus { get; set; }
         public DbSet<Manager> manager { get; set; }
-        public DbSet<ManagerAuthentification> managerAuthentification { get; set;}
-        public DbSet<ManagerCookies> managerCookies { get; set; }
+      
+       
 
     }
 }

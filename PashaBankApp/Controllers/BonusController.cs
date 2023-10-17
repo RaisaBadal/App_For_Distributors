@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using PashaBankApp.Controllers.Interface;
 using PashaBankApp.ResponseAndRequest;
 using PashaBankApp.Services.Interface;
 
@@ -7,23 +10,41 @@ namespace PashaBankApp.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "ManagerOnly")]
     public class BonusController : ControllerBase
     {
-        public readonly Ibonus bonus;
-        public BonusController(Ibonus bonus)
+
+        private readonly ICommandHandler<InsertBonus> insertBonusCmdHandler;
+        private readonly IcommandHandlerListAndResponse<GetBonus,SortBonus> GetBySurnameBonusCmdHandler;
+        private readonly IcommandHandlerList<SortBonusAsc> orderAscBonusCmdHandler;
+        private readonly IcommandHandlerList<SortBonus> orderDescBonusCmdHandler;
+
+        public BonusController(ICommandHandler<InsertBonus> insertBonusCmdHandler,
+           IcommandHandlerListAndResponse<GetBonus, SortBonus> GetBySurnameBonusCmdHandler,
+           IcommandHandlerList<SortBonusAsc> orderAscBonusCmdHandler,
+           IcommandHandlerList<SortBonus> orderDescBonusCmdHandler
+           )
         {
-            this.bonus = bonus;
+            this.insertBonusCmdHandler= insertBonusCmdHandler;
+            this.GetBySurnameBonusCmdHandler = GetBySurnameBonusCmdHandler;
+            this.orderAscBonusCmdHandler = orderAscBonusCmdHandler;
+            this.orderDescBonusCmdHandler = orderDescBonusCmdHandler;
         }
-        [HttpPost("InsertBonus(CalcBonus)")]
-        public IActionResult CalcBonus(InsertBonus insertBonus)
+        [HttpPost("Insert")]
+        public async Task <IActionResult> CalcBonus(InsertBonus insertBonus)
         {
             try
             {
-                if (insertBonus.StartDate == null || insertBonus.EndDate==null) return BadRequest("Argument is null");
-                var res = bonus.CalcBonus(insertBonus);
-                if (res == false) return StatusCode(501, "Insert failed");
-
-                return Ok("success inserted");
+                if (insertBonus == null)
+                {
+                    return BadRequest("Argument is null");
+                    
+                }
+                if(insertBonusCmdHandler.Handle(insertBonus)==true)
+                {
+                    return Ok("success inserted bonus");
+                }
+                return NotFound("Failed");
             }
             catch (Exception ex)
             {
@@ -31,20 +52,69 @@ namespace PashaBankApp.Controllers
             }
         }
 
-        [HttpGet("GetBonusByNameSurname")]
-        public List<SortBonus> GetBonusByNameSurname(GetBonus getbonus)
+        [HttpGet("ByNameSurname")]
+        public async Task<IActionResult> GetBonusByNameSurname(GetBonus getbonus)
         {
-            return bonus.GetBonusByNameSurname(getbonus);
+            try
+            {
+                
+                if (getbonus == null)
+                {
+                    return BadRequest("Argument is null");
+
+                }
+                var res = GetBySurnameBonusCmdHandler.Handle(getbonus);
+                if (res ==null)
+                {
+                   return NotFound("Failed");
+                   
+                }
+                return Ok(res);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(103, ex.Message);
+            }
         }
-        [HttpGet("SortByBonusDesc")]
-        public List<SortBonus> SortByBonusDesc()
+        [HttpGet("SortDesc")]
+        public async Task<IActionResult> SortByBonusDesc()
         {
-            return bonus.SortByBonusDesc();
+            try
+            {
+                var res = orderAscBonusCmdHandler.Handle();
+
+               
+                if (res == null)
+                {
+                    return NotFound("Failed");
+
+                }
+                return Ok(res);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(103, ex.Message);
+            }
         }
-        [HttpGet("SortByBonusAsc")]
-        public List<SortBonus> SortByBonusAsc()
+        [HttpGet("SortAsc")]
+        public async Task<IActionResult> SortByBonusAsc()
         {
-            return bonus.SortByBonusAsc();
+            try
+            {
+                var res = orderDescBonusCmdHandler.Handle();
+
+
+                if (res == null)
+                {
+                    return NotFound("Failed");
+
+                }
+                return Ok(res);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(103, ex.Message);
+            }
         }
     }
 }

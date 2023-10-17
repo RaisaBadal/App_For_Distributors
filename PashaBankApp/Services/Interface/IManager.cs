@@ -4,8 +4,7 @@ namespace PashaBankApp.Services.Interface
 {
     public interface IManager
     {
-        bool RegistrationManager(InsertManager signup);
-        bool SignIn(GetManagerAuthent manAuth);
-        bool SignOut();
+        Task<bool> RegistrationManager(InsertManager signup);
+        Task<string> SignIn(GetManagerAuthent manAuth);
     }
 }

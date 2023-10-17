@@ -5,10 +5,10 @@ namespace PashaBankApp.Services.Interface
 {
     public interface IProduct
     {
-        bool InsertProduct(InsertProduct InProd);
+        bool InsertProduct(InsertProducts InProd);
         bool UpdateProduct(UpdateProduct UpProd);
-        bool DeleteProduct(int productID);
-        bool SoftDeletedProduct(int productID);
+        bool DeleteProduct(DeleteProducts DeleteProd);
+        bool SoftDeletedProduct(SoftDeleteProductRequest SoftDeleteProd);
         List<GetProductResponse> getProductResponses();
 
     }

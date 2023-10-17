@@ -7,7 +7,8 @@ using PashaBankApp.ResponseAndRequest;
 using PashaBankApp.Services.Interface;
 using PashaBankApp.Validation.Regexi;
 using System.ComponentModel.DataAnnotations.Schema;
-
+using System.Security.Claims;
+using Microsoft.AspNetCore.Mvc;
 namespace PashaBankApp.Services
 {
     public class DistributorServices:IDistributor
@@ -22,13 +23,12 @@ namespace PashaBankApp.Services
             error = new ErrorServices(db);
             log= new LogServices(db);
         }
-        private Manager GetManagerbyCookies()
+       /* private Manager GetManagerbyCookies()
         {
 
             return null;
 
-        }
-
+        }*/
 
         #region InsertDistributor
         public bool InsertDistributor(InsertDistributorRequest req)
@@ -38,7 +38,8 @@ namespace PashaBankApp.Services
             {
                 try
                 {
-                    //validaciebi
+                
+                    //validaciebi     
                     if (!RegexForValidate.NameIsMatch(req.distributorName) || !RegexForValidate.SurnameIsMatch(req.LastName) ||
                         !RegexForValidate.AddressIsMatch(req.addressInfo))
                         return false;
@@ -254,19 +255,19 @@ namespace PashaBankApp.Services
         #endregion
 
         #region DeleteDistributor
-        public bool DeleteDistributor(int ditributorID)
+        public bool DeleteDistributor(DeleteDistributor deleteDistr)
         {
             //gadacemuli ID-is mixedvit distributoris bazidan washla
             try
             {
-                var dist = dbraisa.Distributors.Where(a => a.DistributorID == ditributorID).FirstOrDefault();
+                var dist = dbraisa.Distributors.Where(a => a.DistributorID == deleteDistr.DistributorID).FirstOrDefault();
                 var address = dbraisa.Distributors.Where(a => a.DistributorID == dist.DistributorID).Select(i => i.address).FirstOrDefault();
                 var contact = dbraisa.Distributors.Where(a => a.DistributorID == dist.DistributorID).Select(i => i.contactinfo).SingleOrDefault();
                 var personal = dbraisa.Distributors.Where(a => a.DistributorID == dist.DistributorID).Select(i => i.personalinfo).SingleOrDefault();
                 if(dist==null||address==null||contact==null||personal==null)
                 {
                     Console.WriteLine("There is no such record in the table, so we cannot delete it :)");
-                    error.Action($"There is no such record in the table, so we cannot delete it, ID {ditributorID}", Enums.ErrorTypeEnum.error);
+                    error.Action($"There is no such record in the table, so we cannot delete it, ID {deleteDistr.DistributorID}", Enums.ErrorTypeEnum.error);
                     return false;
                 }
                 else
@@ -276,7 +277,7 @@ namespace PashaBankApp.Services
                     dbraisa.contactInfos.Remove(contact);
                     dbraisa.addresses.Remove(address);
                     dbraisa.SaveChanges();
-                    log.ActionLog($"Deleted successfully from Distributor Table, id: {ditributorID}");
+                    log.ActionLog($"Deleted successfully from Distributor Table, id: {deleteDistr.DistributorID}");
                     return true;
                 }
             }
@@ -291,23 +292,23 @@ namespace PashaBankApp.Services
         #endregion
 
         #region SoftDistributorDelete
-        public bool SoftDistributorDelete(int distributorID)
+        public bool SoftDistributorDelete(SoftDeleteDistributor deleteDistr)
         {
             //gadacemuli distributorID-is mixedvit egretwodebuki soft Delete
             try
             {
-                var dist = dbraisa.Distributors.Where(a => a.DistributorID == distributorID).FirstOrDefault();
+                var dist = dbraisa.Distributors.Where(a => a.DistributorID == deleteDistr.DistributorID).FirstOrDefault();
                 if (dist == null)
                 {
                     Console.WriteLine("No such record was found");
-                    error.Action($"No such record was found, ID {distributorID}", ErrorTypeEnum.error);
+                    error.Action($"No such record was found, ID {deleteDistr.DistributorID}", ErrorTypeEnum.error);
                     return false;
                 }
                 else
                 {
                     dist.ExpireOn = "Expired";
                     dist.ExpireDate = DateTime.Now;
-                    log.ActionLog($"Distributor {distributorID} -> soft deleted");
+                    log.ActionLog($"Distributor {deleteDistr.DistributorID} -> soft deleted");
                     dbraisa.SaveChanges();
                     return true;
                 }
