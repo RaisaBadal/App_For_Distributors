@@ -1,34 +1,32 @@
-﻿using Microsoft.AspNetCore.Mvc.Formatters.Xml;
-using Microsoft.IdentityModel.Tokens;
-using PashaBankApp.DbContexti;
+﻿using PashaBankApp.DbContexti;
 using PashaBankApp.Enums;
-using PashaBankApp.Models;
 using PashaBankApp.ResponseAndRequest;
+using PashaBankApp.Services;
 using PashaBankApp.Services.Interface;
 using PashaBankApp.Validation.Regexi;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Mvc;
-namespace PashaBankApp.Services
+using PBG.Distributor.Core.Interface;
+using PashaBankApp.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace PBG.Distributor.Infrastructure.Repositories
 {
-    public class DistributorServices:IDistributor
+    public class DistributorRepos:IDistributorRepos
     {
         public readonly DbRaisa dbraisa;
-        private readonly ErrorServices error;
-        private readonly LogServices log;
+        public readonly IErrorRepos error;
+        public readonly ILogRepos log;
 
-        public DistributorServices(DbRaisa db)
+        public DistributorRepos(DbRaisa db, IErrorRepos error, ILogRepos log)
         {
-           dbraisa= db;
-            error = new ErrorServices(db);
-            log= new LogServices(db);
+            dbraisa = db;
+            this.error = error;
+            this.log = log;
         }
-       /* private Manager GetManagerbyCookies()
-        {
-
-            return null;
-
-        }*/
+       
 
         #region InsertDistributor
         public bool InsertDistributor(InsertDistributorRequest req)
@@ -38,39 +36,39 @@ namespace PashaBankApp.Services
             {
                 try
                 {
-                
+
                     //validaciebi     
                     if (!RegexForValidate.NameIsMatch(req.distributorName) || !RegexForValidate.SurnameIsMatch(req.LastName) ||
                         !RegexForValidate.AddressIsMatch(req.addressInfo))
                         return false;
-                    if((int)req.contactType==2 && !RegexForValidate.PhoneIsMatch(req.contactInformation)) return false;
-                    if((int)req.contactType==3 && !RegexForValidate.EmailIsMatch(req.contactInformation)) return false;
-                    if (req.dateofIssue > DateTime.Now || req.expireDate < DateTime.Now||req.birthdate>DateTime.Now||req.birthdate>new DateTime(2002,01,01)) return false;
-                    
+                    if ((int)req.contactType == 2 && !RegexForValidate.PhoneIsMatch(req.contactInformation)) return false;
+                    if ((int)req.contactType == 3 && !RegexForValidate.EmailIsMatch(req.contactInformation)) return false;
+                    if (req.dateofIssue > DateTime.Now || req.expireDate < DateTime.Now || req.birthdate > DateTime.Now || req.birthdate > new DateTime(2002, 01, 01)) return false;
+
 
                     int addressID = 0;
                     int contactId = 0;
                     int personalinfoID = 0;
                     int inventerID = 0;
 
-                        var newAddress = new Models.Address { AddressType = req.addressType, AddressInfo = req.addressInfo };
-                        dbraisa.addresses.Add(newAddress);
-                        dbraisa.SaveChanges();
-                        addressID = dbraisa.addresses.Max(i=>i.AdreessID);
-                        log.ActionLog($"Successfully Inserted data to address table, id: {addressID}");
-                   
+                    var newAddress = new PashaBankApp.Models.Address { AddressType = req.addressType, AddressInfo = req.addressInfo };
+                    dbraisa.addresses.Add(newAddress);
+                    dbraisa.SaveChanges();
+                    addressID = dbraisa.addresses.Max(i => i.AdreessID);
+                    log.ActionLog($"Successfully Inserted data to address table, id: {addressID}");
+
 
                     var existingContact = dbraisa.contactInfos.Where(c => c.ContactInformation == req.contactInformation).FirstOrDefault();
                     if (existingContact != null)
                     {
                         Console.WriteLine("Contact info already exists.");
                         trans.Rollback();
-                        error.Action("Contact info already exists", Enums.ErrorTypeEnum.error);
+                        error.Action("Contact info already exists", PashaBankApp.Enums.ErrorTypeEnum.error);
                         return false;
                     }
                     else
                     {
-                        var newContact = new Models.ContactInfo { contactType = req.contactType, ContactInformation = req.contactInformation, };
+                        var newContact = new PashaBankApp.Models.ContactInfo { contactType = req.contactType, ContactInformation = req.contactInformation, };
                         dbraisa.contactInfos.Add(newContact);
                         dbraisa.SaveChanges();
                         contactId = dbraisa.contactInfos.Max(i => i.ContactInfoID);
@@ -81,12 +79,12 @@ namespace PashaBankApp.Services
                     {
                         Console.WriteLine("Personal info already exists.");
                         trans.Rollback();
-                        error.Action("Personal info already exists", Enums.ErrorTypeEnum.error);
+                        error.Action("Personal info already exists", PashaBankApp.Enums.ErrorTypeEnum.error);
                         return false;
                     }
                     else
                     {
-                        var newPersonalInfo = new Models.PersonalInfo
+                        var newPersonalInfo = new PersonalInfo
                         {
                             DocumentType = req.documentType,
                             DocumentSeria = req.documentSeria,
@@ -95,8 +93,8 @@ namespace PashaBankApp.Services
                             ExpireDate = req.expireDate,
                             PersonalNumber = req.personalNumber,
                             IssuingAuthority = req.issuingAuthority
-                            
-                            
+
+
                         };
                         dbraisa.personalInfos.Add(newPersonalInfo);
                         dbraisa.SaveChanges();
@@ -118,7 +116,7 @@ namespace PashaBankApp.Services
                             dbraisa.SaveChanges(true);
                         }
 
-                       
+
                         if (distrInv != null && distrInv.CountOffInvetedDistributor <= 3)
                         {
                             distrInv.CountOffInvetedDistributor++;
@@ -129,10 +127,10 @@ namespace PashaBankApp.Services
 
                     dbraisa.SaveChanges();
 
-                    var distributor = new Models.Distributor
+                    var distributor = new PashaBankApp.Models.Distributor
                     {
                         DistributorName = req.distributorName,
-                        DistributorLastName=req.LastName,
+                        DistributorLastName = req.LastName,
                         BirthDate = req.birthdate,
                         Gender = req.gender,
                         AddressID = addressID,
@@ -149,9 +147,9 @@ namespace PashaBankApp.Services
                     }
 
                     dbraisa.Distributors.Add(distributor);
-                   dbraisa.SaveChanges(true);
-                  
-                  // log.ActionLog("Successfully Inserted data to distributor Table");
+                    dbraisa.SaveChanges(true);
+
+                    // log.ActionLog("Successfully Inserted data to distributor Table");
                     trans.Commit();
                     return true;
                 }
@@ -160,7 +158,7 @@ namespace PashaBankApp.Services
                     Console.WriteLine("An error occurred: " + ex.Message);
                     Console.WriteLine("Stack Trace: " + ex.StackTrace);
                     trans.Rollback();
-                    error.Action(ex.Message + " " + ex.StackTrace, Enums.ErrorTypeEnum.Fatal);
+                    error.Action(ex.Message + " " + ex.StackTrace, ErrorTypeEnum.Fatal);
                     throw;
                 }
             }
@@ -170,22 +168,22 @@ namespace PashaBankApp.Services
         #region funcCheckLevelForDistributor
         private int CheckLevelForDistributor(int id)
         {
-           //amowmebs mowveulta xis sighrmes
-            var distributor=dbraisa.Distributors.Where(io=>io.DistributorID== id).FirstOrDefault();
-            if( distributor != null )
+            //amowmebs mowveulta xis sighrmes
+            var distributor = dbraisa.Distributors.Where(io => io.DistributorID == id).FirstOrDefault();
+            if (distributor != null)
             {
                 int indexofcurendistributor = distributor.DistributorID;
                 int lv = 0;
-                while(lv<5)
+                while (lv < 5)
                 {
-                    if(distributor.Level>=5)
+                    if (distributor.Level >= 5)
                     {
                         return -2;
                     }
-                    if(dbraisa.Distributors.Any(io=>io.Recomendedby==indexofcurendistributor))
+                    if (dbraisa.Distributors.Any(io => io.Recomendedby == indexofcurendistributor))
                     {
                         var suchdistributor = dbraisa.Distributors.Where(io => io.Recomendedby == indexofcurendistributor).FirstOrDefault();
-                        if(suchdistributor!=null)
+                        if (suchdistributor != null)
                         {
                             distributor.Level++;
                             indexofcurendistributor = suchdistributor.DistributorID;
@@ -215,10 +213,10 @@ namespace PashaBankApp.Services
                 var address = dbraisa.Distributors.Where(a => a.DistributorID == updis.DistributorID).Select(i => i.address).FirstOrDefault();
                 var contact = dbraisa.Distributors.Where(a => a.DistributorID == updis.DistributorID).Select(i => i.contactinfo).SingleOrDefault();
                 var personal = dbraisa.Distributors.Where(a => a.DistributorID == updis.DistributorID).Select(i => i.personalinfo).SingleOrDefault();
-                if (distup == null || address == null ||contact==null||personal==null)
+                if (distup == null || address == null || contact == null || personal == null)
                 {
                     Console.WriteLine("No such record was found in the Distributor table :))");
-                    error.Action("No such record was found in the Distributor table", Enums.ErrorTypeEnum.error);
+                    error.Action("No such record was found in the Distributor table", ErrorTypeEnum.error);
                     return false;
                 }
                 else
@@ -248,7 +246,7 @@ namespace PashaBankApp.Services
             {
                 Console.WriteLine(ex.Message);
                 Console.WriteLine(ex.StackTrace);
-                error.Action(ex.Message + " " + ex.StackTrace, Enums.ErrorTypeEnum.Fatal);
+                error.Action(ex.Message + " " + ex.StackTrace, ErrorTypeEnum.Fatal);
                 throw;
             }
         }
@@ -264,10 +262,10 @@ namespace PashaBankApp.Services
                 var address = dbraisa.Distributors.Where(a => a.DistributorID == dist.DistributorID).Select(i => i.address).FirstOrDefault();
                 var contact = dbraisa.Distributors.Where(a => a.DistributorID == dist.DistributorID).Select(i => i.contactinfo).SingleOrDefault();
                 var personal = dbraisa.Distributors.Where(a => a.DistributorID == dist.DistributorID).Select(i => i.personalinfo).SingleOrDefault();
-                if(dist==null||address==null||contact==null||personal==null)
+                if (dist == null || address == null || contact == null || personal == null)
                 {
                     Console.WriteLine("There is no such record in the table, so we cannot delete it :)");
-                    error.Action($"There is no such record in the table, so we cannot delete it, ID {deleteDistr.DistributorID}", Enums.ErrorTypeEnum.error);
+                    error.Action($"There is no such record in the table, so we cannot delete it, ID {deleteDistr.DistributorID}",ErrorTypeEnum.error);
                     return false;
                 }
                 else
@@ -285,7 +283,7 @@ namespace PashaBankApp.Services
             {
                 Console.WriteLine(ex.Message);
                 Console.WriteLine(ex.StackTrace);
-                error.Action(ex.Message + " " + ex.StackTrace, Enums.ErrorTypeEnum.Fatal);
+                error.Action(ex.Message + " " + ex.StackTrace, ErrorTypeEnum.Fatal);
                 throw;
             }
         }
@@ -317,10 +315,10 @@ namespace PashaBankApp.Services
             {
                 Console.WriteLine(ex.StackTrace);
                 Console.WriteLine(ex.Message);
-                error.Action(ex.StackTrace + " " + ex.Message,Enums.ErrorTypeEnum.Fatal);
+                error.Action(ex.StackTrace + " " + ex.Message, ErrorTypeEnum.Fatal);
                 throw;
             }
-          
+
         }
 
         #endregion

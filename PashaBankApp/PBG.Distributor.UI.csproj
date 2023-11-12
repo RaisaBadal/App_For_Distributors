@@ -24,7 +24,13 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PBG.Distributor.Core\PBG.Distributor.Core.csproj" />
+    <ProjectReference Include="..\PBG.Distributor.DataSource\PBG.Distributor.DataSource.csproj" />
+    <ProjectReference Include="..\PBG.Distributor.Infrastructure\PBG.Distributor.Infrastructure.csproj" />
+    <ProjectReference Include="..\PBG.Distributor.Presentation\PBG.Distributor.Presentation.csproj" />
   </ItemGroup>
 
 </Project>

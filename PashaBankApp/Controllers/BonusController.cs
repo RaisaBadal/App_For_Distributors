@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PashaBankApp.Controllers.Interface;
 using PashaBankApp.ResponseAndRequest;
-using PashaBankApp.Services.Interface;
 
 namespace PashaBankApp.Controllers
 {

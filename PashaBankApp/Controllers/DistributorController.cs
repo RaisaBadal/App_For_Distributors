@@ -4,10 +4,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
 using PashaBankApp.Controllers.Interface;
-using PashaBankApp.DbContexti;
 using PashaBankApp.Enums;
 using PashaBankApp.ResponseAndRequest;
-using PashaBankApp.Services.Interface;
 
 namespace PashaBankApp.Controllers
 {

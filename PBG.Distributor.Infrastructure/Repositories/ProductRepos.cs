@@ -1,29 +1,38 @@
 ﻿using PashaBankApp.DbContexti;
 using PashaBankApp.ResponseAndRequest;
+using PashaBankApp.Services;
 using PashaBankApp.Services.Interface;
+using PashaBankApp.Models;
+using PashaBankApp.Enums;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using PBG.Distributor.Core.Interface;
 
-namespace PashaBankApp.Services
+namespace PBG.Distributor.Infrastructure.Repositories
 {
-    public class ProductServices:IProduct
+    public class ProductRepos: IProductRepos
     {
         public readonly DbRaisa dbRaisa;
-        private readonly ErrorServices error;
-        private readonly LogServices log;
-        public ProductServices(DbRaisa dbRaisa)
+        private readonly IErrorRepos error;
+        private readonly ILogRepos log;
+        public ProductRepos(DbRaisa dbRaisa, IErrorRepos error,ILogRepos log)
         {
-            this.dbRaisa = dbRaisa;
-            error=new ErrorServices(dbRaisa);
-            log= new LogServices(dbRaisa);
+             this.dbRaisa = dbRaisa;
+             this.error = error;
+             this.log = log;
         }
         #region InsertProduct
         public bool InsertProduct(InsertProducts InProd)
         {
             //produqtebis cxrilis shevseba
-            using (var transact=dbRaisa.Database.BeginTransaction())
+            using (var transact = dbRaisa.Database.BeginTransaction())
             {
                 try
                 {
-                    var product = new Models.Product
+                    var product = new Product
                     {
                         ProductName = InProd.ProductName,
                         ProductPrice = InProd.ProductPrice
@@ -42,7 +51,7 @@ namespace PashaBankApp.Services
                         //tu arsebosb produqti mashin ar davamatebt
                         Console.WriteLine("Such a product already exists");
                         transact.Rollback();
-                        error.Action("Such a product already exists", Enums.ErrorTypeEnum.Info);
+                        error.Action("Such a product already exists", ErrorTypeEnum.Info);
                         return false;
                     }
                 }
@@ -52,7 +61,7 @@ namespace PashaBankApp.Services
                     Console.WriteLine(ex.Message);
                     Console.WriteLine(ex.StackTrace);
                     Console.WriteLine("Try again :)");
-                    error.Action(ex.Message + ex.StackTrace, Enums.ErrorTypeEnum.Fatal);
+                    error.Action(ex.Message + ex.StackTrace, ErrorTypeEnum.Fatal);
                     return false;
                 }
             }
@@ -60,33 +69,33 @@ namespace PashaBankApp.Services
         #endregion
 
         #region UpdateProduct
-       public bool UpdateProduct(UpdateProduct UpProd)
+        public bool UpdateProduct(UpdateProduct UpProd)
         {
             //produqtis ganaxleba
             try
             {
                 //vamowmebt tu arsebobs aseti produqti da tu aris igi aqtiuri anu washliliar unda iyos da expireON ar unda iyos shevsebuli
-                var product=dbRaisa.products.Where(a=>a.ProductID==UpProd.ProductID).FirstOrDefault();
-                if (product == null || product.ExpireOn!=null)
+                var product = dbRaisa.products.Where(a => a.ProductID == UpProd.ProductID).FirstOrDefault();
+                if (product == null || product.ExpireOn != null)
                 {
                     Console.WriteLine("No such product exists, try adding :)");
-                    error.Action($"No such product exists, or it is deleted, try adding, ID {UpProd.ProductID}", Enums.ErrorTypeEnum.Info);
+                    error.Action($"No such product exists, or it is deleted, try adding, ID {UpProd.ProductID}", ErrorTypeEnum.Info);
                     return false;
                 }
                 else
                 {
-                   product.ProductName = UpProd.ProductName;
-                   product.ProductPrice = UpProd.ProductPrice;
-                   dbRaisa.SaveChanges();
+                    product.ProductName = UpProd.ProductName;
+                    product.ProductPrice = UpProd.ProductPrice;
+                    dbRaisa.SaveChanges();
                     log.ActionLog($"The product has been updated successfully, id: {UpProd.ProductID}");
-                   return true;
-               }
+                    return true;
+                }
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
                 Console.WriteLine(ex.StackTrace);
-                error.Action(ex.Message+" "+ex.StackTrace, Enums.ErrorTypeEnum.Fatal);
+                error.Action(ex.Message + " " + ex.StackTrace, ErrorTypeEnum.Fatal);
                 throw;
             }
         }
@@ -94,16 +103,16 @@ namespace PashaBankApp.Services
 
         #region DeleteProduct
 
-        public bool DeleteProduct(DeleteProducts deleteProd) 
+        public bool DeleteProduct(DeleteProducts deleteProd)
         {
             //chanaweris washla mtlianad bazidan
             try
             {
-            var prod = dbRaisa.products.Where(a => a.ProductID== deleteProd.ProductID).FirstOrDefault();
+                var prod = dbRaisa.products.Where(a => a.ProductID == deleteProd.ProductID).FirstOrDefault();
                 if (prod == null)
                 {
                     Console.WriteLine("There is no such product, so we cannot delete it :)");
-                    error.Action($"There is no such product, so we cannot delete it, ID {deleteProd.ProductID}", Enums.ErrorTypeEnum.Info);
+                    error.Action($"There is no such product, so we cannot delete it, ID {deleteProd.ProductID}", ErrorTypeEnum.Info);
                     return false;
                 }
                 else
@@ -118,40 +127,40 @@ namespace PashaBankApp.Services
             {
                 Console.WriteLine(ex.Message);
                 Console.WriteLine(ex.StackTrace);
-                error.Action(ex.Message+" "+ex.StackTrace,Enums.ErrorTypeEnum.Fatal);
+                error.Action(ex.Message + " " + ex.StackTrace, ErrorTypeEnum.Fatal);
                 throw;
             }
         }
         #endregion
 
         #region SoftDeletedProduct
-       public bool SoftDeletedProduct(SoftDeleteProductRequest SoftDeletedProd)
+        public bool SoftDeletedProduct(SoftDeleteProductRequest SoftDeletedProd)
         {
             //soft delete funqcia produqtebze
             try
             {
                 var prod = dbRaisa.products.Where(a => a.ProductID == SoftDeletedProd.ProductID).FirstOrDefault();
-                if(prod == null)
+                if (prod == null)
                 {
                     Console.WriteLine($"No such record was found, ID {SoftDeletedProd.ProductID}");
-                    error.Action($"No such record was found, ID {SoftDeletedProd.ProductID}", Enums.ErrorTypeEnum.error);
+                    error.Action($"No such record was found, ID {SoftDeletedProd.ProductID}", ErrorTypeEnum.error);
                     return false;
                 }
                 else
                 {
                     prod.ExpireOn = "Expired";
-                    prod.ExpireDate= DateTime.Now;
+                    prod.ExpireDate = DateTime.Now;
                     dbRaisa.SaveChanges();
                     log.ActionLog($"Product: {SoftDeletedProd.ProductID}  is soft deleted");
                     return true;
                 }
-                
+
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
                 Console.WriteLine(ex.StackTrace);
-                error.Action(ex.Message + " " + ex.StackTrace,Enums.ErrorTypeEnum.Fatal);
+                error.Action(ex.Message + " " + ex.StackTrace, ErrorTypeEnum.Fatal);
                 return false;
             }
         }
@@ -161,7 +170,7 @@ namespace PashaBankApp.Services
         public List<GetProductResponse> getProductResponses()
         {
             //yvela chanaweris wamogheba product cxrilidan
-            var prod = dbRaisa.products.Select(a => new GetProductResponse { ExpireDate = a.ExpireDate, ExpireOn=a.ExpireOn, ProductName=a.ProductName,ProductPrice=a.ProductPrice,ProductID=a.ProductID}).ToList();
+            var prod = dbRaisa.products.Select(a => new GetProductResponse { ExpireDate = a.ExpireDate, ExpireOn = a.ExpireOn, ProductName = a.ProductName, ProductPrice = a.ProductPrice, ProductID = a.ProductID }).ToList();
             return prod;
         }
         #endregion

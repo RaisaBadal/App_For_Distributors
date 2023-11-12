@@ -1,5 +1,4 @@
-﻿using PashaBankApp.Models;
-
+﻿
 namespace PashaBankApp.ResponseAndRequest
 {
     public class InsertDistributorSaleRequest

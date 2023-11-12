@@ -15,7 +15,11 @@ using PashaBankApp.Models;
 using PashaBankApp.ResponseAndRequest;
 using PashaBankApp.Services;
 using PashaBankApp.Services.Interface;
+using PBG.Distributor.Core.Interface;
+using PBG.Distributor.Infrastructure.Repositories;
+using PBG.Distributor.Presentation.Repositories;
 using System.Text;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -58,14 +62,27 @@ builder.Services.AddSwaggerGen(c =>
         }, new List<string>() }
     });
 });
+#region servicesScopes
 builder.Services.AddScoped<IDistributor, DistributorServices>();
 builder.Services.AddScoped<IProduct, ProductServices>();
-builder.Services.AddScoped<IDistributorSale,DistributorSaleServices>();
+builder.Services.AddScoped<IDistributorSale, DistributorSaleServices>();
 builder.Services.AddScoped<IError, ErrorServices>();
-builder.Services.AddScoped<ILog,LogServices>();
+builder.Services.AddScoped<ILog, LogServices>();
 builder.Services.AddScoped<Ibonus, BonusServices>();
 builder.Services.AddScoped<IManager, ManagerServices>();
+#endregion
 
+#region ReposScopes
+builder.Services.AddScoped<IDistributorRepos, DistributorRepos>();
+builder.Services.AddScoped<IProductRepos, ProductRepos>();
+builder.Services.AddScoped<IDistributorSaleRepos, DistributorSaleRepos>();
+builder.Services.AddScoped<IErrorRepos, ErrorRepos>();
+builder.Services.AddScoped<ILogRepos, LogRepos>();
+builder.Services.AddScoped<IBonusRepos, BonusRepos>();
+builder.Services.AddScoped<IManagerRepos, ManagerRepos>();
+#endregion
+
+#region hendler
 //errorhandle
 builder.Services.AddTransient<IcommandHandlerList<Error>, AllErrorCommandHandler>();
 builder.Services.AddTransient<IcommandHandlerListAndResponse<ErrorBetweenDateRequest, Error>, ErrorBetweenDateCommandHandler>();
@@ -85,9 +102,9 @@ builder.Services.AddTransient<IcommandHandlerList<GetProductResponse>, GetAllPro
 builder.Services.AddTransient<ICommandHandler<InsertDistributorSaleRequest>, InsertDistributorSaleCommandHandler>();
 builder.Services.AddTransient<ICommandHandler<DeleteDistributorSale>, DeleteDistributorSaleCommandHandler>();
 builder.Services.AddTransient<ICommandHandler<SoftDeleteDistributorSaleRequest>, SoftDeleteDistributorSaleCommandHandler>();
-builder.Services.AddTransient<IcommandHandlerListAndResponse<GetDistributorSaleRequest,DistributorSale>, DistributorSaleGetDistCommandHandler>();
-builder.Services.AddTransient<IcommandHandlerListAndResponse<DistributorSaleGetDateRequest,DistributorSale>, DistributorSaleGetDateCommandHandler>();
-builder.Services.AddTransient<IcommandHandlerListAndResponse<DistributorSaleGetProductRequest,DistributorSale>,DistributorSaleGetProductCommandHandler>();
+builder.Services.AddTransient<IcommandHandlerListAndResponse<GetDistributorSaleRequest, DistributorSale>, DistributorSaleGetDistCommandHandler>();
+builder.Services.AddTransient<IcommandHandlerListAndResponse<DistributorSaleGetDateRequest, DistributorSale>, DistributorSaleGetDateCommandHandler>();
+builder.Services.AddTransient<IcommandHandlerListAndResponse<DistributorSaleGetProductRequest, DistributorSale>, DistributorSaleGetProductCommandHandler>();
 
 //distributorHandler
 builder.Services.AddTransient<ICommandHandler<InsertDistributorRequest>, InsertDistributorCommandHandler>();
@@ -101,6 +118,9 @@ builder.Services.AddTransient<ICommandHandler<InsertBonus>, InsertBonusCommandHa
 builder.Services.AddTransient<IcommandHandlerListAndResponse<GetBonus, SortBonus>, GetBonusBySurnameCommandHandler>();
 builder.Services.AddTransient<IcommandHandlerList<SortBonusAsc>, SortBonusAscCommandHandler>();
 builder.Services.AddTransient<IcommandHandlerList<SortBonus>, SortBonusDescCommandHandler>();
+
+#endregion
+
 
 
 builder.Services.AddDbContext<DbRaisa>(str =>

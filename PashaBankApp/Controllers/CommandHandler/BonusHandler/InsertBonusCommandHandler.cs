@@ -14,6 +14,7 @@ namespace PashaBankApp.Controllers.CommandHandler.BonusHandler
 
         public bool Handle(InsertBonus insertBonus)
         {
+     
             return bonus.CalcBonus(insertBonus);
         }
     }

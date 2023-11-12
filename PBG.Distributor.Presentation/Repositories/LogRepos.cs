@@ -1,15 +1,20 @@
 ﻿using PashaBankApp.DbContexti;
-using PashaBankApp.Enums;
+using PBG.Distributor.Core.Interface;
 using PashaBankApp.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
 using PashaBankApp.ResponseAndRequest;
-using PashaBankApp.Services.Interface;
 
-namespace PashaBankApp.Services
+namespace PBG.Distributor.Presentation.Repositories
 {
-    public class LogServices:ILog
+    public class LogRepos: ILogRepos
     {
         private readonly DbRaisa dbraisa;
-        public LogServices(DbRaisa dbraisa)
+        public LogRepos(DbRaisa dbraisa)
         {
             this.dbraisa = dbraisa;
         }
@@ -20,7 +25,7 @@ namespace PashaBankApp.Services
             //log cxrilshi chanawerebis shevseba
             if (message != null)
             {
-                dbraisa.log.Add(new Models.Log()
+                dbraisa.log.Add(new Log()
                 {
                     LogDate = DateTime.Now,
                     LogText = message
@@ -46,8 +51,6 @@ namespace PashaBankApp.Services
             return dbraisa.log.Where(i => i.LogDate >= logs.start && i.LogDate <= logs.end).ToList();
         }
         #endregion
-
-
 
     }
 }

@@ -7,7 +7,6 @@ using PashaBankApp.Controllers.CommandHandler.DistributorSaleHandler;
 using PashaBankApp.Controllers.Interface;
 using PashaBankApp.Models;
 using PashaBankApp.ResponseAndRequest;
-using PashaBankApp.Services.Interface;
 using System.Runtime.CompilerServices;
 
 namespace PashaBankApp.Controllers

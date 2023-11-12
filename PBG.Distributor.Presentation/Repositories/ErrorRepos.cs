@@ -1,31 +1,36 @@
-﻿using Microsoft.EntityFrameworkCore.Query.Internal;
-using PashaBankApp.DbContexti;
+﻿using PashaBankApp.DbContexti;
 using PashaBankApp.Enums;
+using PBG.Distributor.Core.Interface;
 using PashaBankApp.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
 using PashaBankApp.ResponseAndRequest;
-using PashaBankApp.Services.Interface;
 
-namespace PashaBankApp.Services
+namespace PBG.Distributor.Presentation.Repositories
 {
-    public class ErrorServices:IError
+    public class ErrorRepos: IErrorRepos
     {
         private readonly DbRaisa dbraisa;
-        public ErrorServices(DbRaisa dbraisa)
+        public ErrorRepos(DbRaisa dbraisa)
         {
             this.dbraisa = dbraisa;
         }
 
         #region Action
-        public void Action(string mesage,ErrorTypeEnum type)
+        public void Action(string mesage, ErrorTypeEnum type)
         {
             //funqcia romelic chawers bazashi ra errori moxda
-            if(mesage!=null)
+            if (mesage != null)
             {
-                dbraisa.errors.Add(new Models.Error()
+                dbraisa.errors.Add(new Error()
                 {
-                    ErrorType= type,
-                    TimeofOccured=DateTime.Now,
-                    Text= mesage
+                    ErrorType = type,
+                    TimeofOccured = DateTime.Now,
+                    Text = mesage
                 });
                 dbraisa.SaveChanges();
             }

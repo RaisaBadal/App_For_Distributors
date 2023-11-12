@@ -1,33 +1,36 @@
-﻿using Azure.Core;
-using PashaBankApp.DbContexti;
-using PashaBankApp.ResponseAndRequest;
-using PashaBankApp.Services.Interface;
-using BCrypt.Net;
-using PashaBankApp.Models;
-using Microsoft.AspNetCore.Identity;
-using System.Text.RegularExpressions;
-using PashaBankApp.Validation.Regexi;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using System.Data;
+using PashaBankApp.DbContexti;
+using PashaBankApp.Models;
+using PashaBankApp.ResponseAndRequest;
+using PashaBankApp.Services;
+using PashaBankApp.Services.Interface;
+using PashaBankApp.Validation.Regexi;
+using PBG.Distributor.Core.Interface;
+using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
 using System.Text;
+using System.Threading.Tasks;
 
-namespace PashaBankApp.Services
+namespace PBG.Distributor.Infrastructure.Repositories
 {
-    public class ManagerServices : IManager
+    public class ManagerRepos: IManagerRepos
     {
         public readonly DbRaisa dbraisa;
-        private readonly ErrorServices error;
-        private readonly LogServices log;
+        private readonly IErrorRepos error;
+        private readonly ILogRepos log;
         private readonly UserManager<Manager> _managUser;
         private readonly RoleManager<IdentityRole> _rolemanager;
         private readonly IConfiguration config;
-        public ManagerServices(DbRaisa dbraisa, UserManager<Manager> manager, RoleManager<IdentityRole> rol, IConfiguration config)
+        public ManagerRepos(DbRaisa dbraisa, UserManager<Manager> manager, RoleManager<IdentityRole> rol, IConfiguration config, IErrorRepos error, ILogRepos log)
         {
             this.dbraisa = dbraisa;
-            error = new ErrorServices(dbraisa);
-            log = new LogServices(dbraisa);
+             this.error= error;
+            this.log= log;
             _managUser = manager;
             _rolemanager = rol;
             this.config = config;
@@ -45,12 +48,12 @@ namespace PashaBankApp.Services
                         Console.WriteLine("regex failed");
                         return false;
                     }
-                   /* if (!RegexForValidate.EmailIsMatch(signUp.Mail) || !RegexForValidate.PhoneIsMatch(signUp.PhoneNumber))
-                    {
-                        transaction.Rollback();
-                        Console.WriteLine("regex failed");
-                        return false;
-                    }*/
+                    /* if (!RegexForValidate.EmailIsMatch(signUp.Mail) || !RegexForValidate.PhoneIsMatch(signUp.PhoneNumber))
+                     {
+                         transaction.Rollback();
+                         Console.WriteLine("regex failed");
+                         return false;
+                     }*/
 
                     Manager manage = new Manager()
                     {
@@ -67,7 +70,7 @@ namespace PashaBankApp.Services
                         Console.WriteLine("warmatebuliii");
 
                         string role = signUp.Role.ToUpper();
-                        if (role == "ADMIN" || role == "USER" || role == "MODERATOR" || role == "GUEST" || role == "MANAGER"||role=="OPERATOR")
+                        if (role == "ADMIN" || role == "USER" || role == "MODERATOR" || role == "GUEST" || role == "MANAGER" || role == "OPERATOR")
                         {
                             await Console.Out.WriteLineAsync("roli  validuria");
 
@@ -99,14 +102,15 @@ namespace PashaBankApp.Services
                                 return false;
                             }
                         }
-                    }transaction.Rollback();
+                    }
+                    transaction.Rollback();
                     return false;
                 }
 
                 catch (Exception ex)
                 {
                     transaction.Rollback();
-                    error.Action(ex.Message + " " + ex.StackTrace, Enums.ErrorTypeEnum.Fatal);
+                    error.Action(ex.Message + " " + ex.StackTrace, PashaBankApp.Enums.ErrorTypeEnum.Fatal);
                     throw;
                 }
             }
@@ -115,7 +119,7 @@ namespace PashaBankApp.Services
 
         #region SignIn
 
-       
+
         public async Task<string> SignIn(GetManagerAuthent manAuth)
         {
             try
@@ -147,7 +151,7 @@ namespace PashaBankApp.Services
                 Console.WriteLine(ex.StackTrace);
                 return null;
             }
-     
+
         }
 
         private async Task<string> GenerateJwtToken(Manager user, string role)
